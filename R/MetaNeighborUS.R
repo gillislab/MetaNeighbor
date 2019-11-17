@@ -135,7 +135,7 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type) {
     return(cell_NV)
 }
 
-MetaNeighborUSLowMem <- function(dat, study_id, cell_type, skip_network = TRUE) {
+MetaNeighborUSLowMem <- function(dat, study_id, cell_type) {
   dat <- normalize_cols(dat)
   colnames(dat) <- paste(study_id, cell_type, sep = "|")
   studies <- unique(study_id)
@@ -146,20 +146,11 @@ MetaNeighborUSLowMem <- function(dat, study_id, cell_type, skip_network = TRUE) 
     for (study_B_index in study_A_index:length(studies)) {
       study_B <- dat[, data_subsets[, study_B_index]]
       # study B votes for study A
-      if (skip_network) {
-        votes <- compute_votes_without_network(study_A, study_B)
-      } else {
-        network <- build_network(study_A, study_B)
-        votes <- compute_votes_from_network(network)
-      }
+      votes <- compute_votes_without_network(study_A, study_B)
       aurocs <- compute_aurocs(votes)
       result[rownames(aurocs), colnames(aurocs)] <- aurocs
       # study A votes for study B
-      if (skip_network) {
-        votes <- compute_votes_without_network(study_B, study_A)
-      } else {
-        votes <- compute_votes_from_network(t(network))
-      }
+      votes <- compute_votes_without_network(study_B, study_A)
       aurocs <- compute_aurocs(votes)
       result[rownames(aurocs), colnames(aurocs)] <- aurocs
     }

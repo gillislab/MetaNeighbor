@@ -5,11 +5,3 @@ normalize_cols_cpp <- function(M) {
     .Call('_MetaNeighbor_normalize_cols_cpp', PACKAGE = 'MetaNeighbor', M)
 }
 
-count_to_rank <- function(x, total_count) {
-    .Call('_MetaNeighbor_count_to_rank', PACKAGE = 'MetaNeighbor', x, total_count)
-}
-
-bin_to_rank <- function(bins, rank_per_bin) {
-    invisible(.Call('_MetaNeighbor_bin_to_rank', PACKAGE = 'MetaNeighbor', bins, rank_per_bin))
-}
-

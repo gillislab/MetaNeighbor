@@ -16,34 +16,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// count_to_rank
-NumericVector count_to_rank(NumericVector x, int total_count);
-RcppExport SEXP _MetaNeighbor_count_to_rank(SEXP xSEXP, SEXP total_countSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type total_count(total_countSEXP);
-    rcpp_result_gen = Rcpp::wrap(count_to_rank(x, total_count));
-    return rcpp_result_gen;
-END_RCPP
-}
-// bin_to_rank
-void bin_to_rank(NumericVector bins, NumericVector rank_per_bin);
-RcppExport SEXP _MetaNeighbor_bin_to_rank(SEXP binsSEXP, SEXP rank_per_binSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type bins(binsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type rank_per_bin(rank_per_binSEXP);
-    bin_to_rank(bins, rank_per_bin);
-    return R_NilValue;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_MetaNeighbor_normalize_cols_cpp", (DL_FUNC) &_MetaNeighbor_normalize_cols_cpp, 1},
-    {"_MetaNeighbor_count_to_rank", (DL_FUNC) &_MetaNeighbor_count_to_rank, 2},
-    {"_MetaNeighbor_bin_to_rank", (DL_FUNC) &_MetaNeighbor_bin_to_rank, 2},
     {NULL, NULL, 0}
 };
 

@@ -118,7 +118,7 @@ score_default <- function(dat_sub, experiment_labels, celltype_labels) {
 }
 
 # Compute ROCs using the approximate low memory version
-score_low_mem <- function(dat_sub, study_id, celltype_labels, skip_network = TRUE) {
+score_low_mem <- function(dat_sub, study_id, celltype_labels) {
   # remove cells that have zero expressed genes
   nonzero_cells <- Matrix::colSums(dat_sub) > 0
   dat_sub <- dat_sub[, nonzero_cells]
@@ -132,8 +132,7 @@ score_low_mem <- function(dat_sub, study_id, celltype_labels, skip_network = TRU
   for (study in unique_study_ids) {
     votes <- compute_votes(candidates = dat_sub[, study_id == study],
                            voters = dat_sub[, study_id != study],
-                           voter_id = celltype_labels[study_id != study,],
-                           skip_network)
+                           voter_id = celltype_labels[study_id != study,])
     all_aurocs <- compute_aurocs(
       votes, candidate_id = celltype_labels[study_id == study,, drop = FALSE]
     )
@@ -144,13 +143,6 @@ score_low_mem <- function(dat_sub, study_id, celltype_labels, skip_network = TRU
 }
 
 # Compute neighbor voting for a given set of candidates and voters
-compute_votes <- function(candidates, voters, voter_id, skip_network) {
-  if (skip_network) {
+compute_votes <- function(candidates, voters, voter_id) {
     return(compute_votes_without_network(candidates, voters, voter_id))
-  } else {
-    network <- build_network(candidates, voters)
-    votes <- compute_votes_from_network(network)
-    rm(network); gc()
-    return(votes)
-  }
 }

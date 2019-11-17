@@ -25,19 +25,3 @@ NumericMatrix normalize_cols_cpp(SEXP M) {
     case REALSXP: return normalize_cols_cpp_imp<REALSXP>(M);
   }
 }
-
-// [[Rcpp::export]]
-NumericVector count_to_rank(NumericVector x, int total_count) {
-  NumericVector result(x.length());
-  int cumulated_total = 0;
-  for (int i = 0; i < x.length(); i++) {
-    result[i] = (cumulated_total + (x(i)+1)*0.5) / total_count;
-    cumulated_total += x[i];
-  }
-  return result;
-}
-
-// [[Rcpp::export]]
-void bin_to_rank(NumericVector bins, NumericVector rank_per_bin) {
-  for (int i = 0; i < bins.length(); i++) { bins[i] = rank_per_bin[bins[i]-1]; }
-}

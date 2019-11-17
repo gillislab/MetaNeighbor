@@ -32,45 +32,6 @@ compute_votes_without_network <- function(candidates, voters, voter_id = NULL) {
   return(votes)
 }
 
-# Build cell x cell correlation network from scaled matrices
-build_network <- function(set_A, set_B, ranked = TRUE) {
-  result <- crossprod(set_A, set_B)
-  if (!ranked) { return(result) }
-  A_labels <- rownames(result)
-  B_labels <- colnames(result)
-  result <- matrix(pseudo_rank(result), nrow = nrow(result))
-  rownames(result) <- A_labels
-  colnames(result) <- B_labels
-  return(result)
-}
-
-# Rank data approximately (sampling-based, calling close values as ties)
-pseudo_rank <- function(x, breaks = 1000, depth = 1000) {
-  m <- min(x)
-  M <- max(x)
-  bins <- floor((x-m) / ((1+1e-10)*(M-m)) * breaks) + 1
-  if (is.null(depth)) {
-    num_per_bin <- tabulate(bins, nbins = breaks)
-    rank_per_bin <- count_to_rank(num_per_bin, length(x))
-  } else {
-    num_per_bin <- tabulate(bins[sample.int(length(x), breaks*depth)], nbins = breaks)
-    rank_per_bin <- count_to_rank(num_per_bin, breaks*depth)
-  }
-  bin_to_rank(bins, rank_per_bin)
-  return(bins)
-}
-
-# Compute neighbor voting from cell x cell correlation network
-#
-# voter_id is a cell x labels binary matrix indicating cell types
-# If left empty, cell types are assumed to be the column names of the network.
-compute_votes_from_network <- function(network, voter_id = NULL) {
-  if (is.null(voter_id)) {
-    voter_id <- design_matrix(colnames(network))
-  }
-  return(network %*% voter_id / rowSums(network))
-}
-
 # Compute AUROCs based on neighbor voting and candidate identities
 #
 # candidate_id is a binary matrix indicating the cell type of candidates
