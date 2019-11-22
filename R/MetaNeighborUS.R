@@ -13,6 +13,13 @@
 #' @param cell_type a vector that lists the cell type of each sample
 #' @param fast_version default value FALSE; a boolean flag indicating whether
 #' to use the fast and low memory version of MetaNeighbor
+#' @param node_degree_normalization default value TRUE; a boolean flag indicating
+#' whether to use normalize votes by dividing through total node degree.
+#' This option is currently only relevant when fast_version = TRUE.
+#' @param one_vs_best default value FALSE; a boolean flag indicating whether
+#' to compute AUROCs based on a best match against second best match setting
+#' (default version is one-vs-rest). This option is currently only relevant
+#' when fast_version = TRUE.
 #'
 #' @return The output is a cell type-by-cell type mean AUROC matrix, which is
 #' built by treating each pair of cell types as testing and training data for
@@ -32,7 +39,9 @@
 #' @export
 #'
 
-MetaNeighborUS <- function(var_genes, dat, i = 1, study_id, cell_type, fast_version = FALSE){
+MetaNeighborUS <- function(var_genes, dat, i = 1, study_id, cell_type,
+                           fast_version = FALSE, node_degree_normalization = TRUE,
+                           one_vs_best = FALSE){
 
     dat    <- SummarizedExperiment::assay(dat, i = i)
     samples <- colnames(dat)
@@ -63,7 +72,8 @@ MetaNeighborUS <- function(var_genes, dat, i = 1, study_id, cell_type, fast_vers
     cell_type <- as.character(cell_type)
 
     if (fast_version) {
-      cell_NV <- MetaNeighborUSLowMem(dat, study_id, cell_type)
+      cell_NV <- MetaNeighborUSLowMem(dat, study_id, cell_type,
+                                      node_degree_normalization, one_vs_best)
     } else {
       cell_NV <- MetaNeighborUSDefault(dat, study_id, cell_type)
     }
@@ -135,7 +145,8 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type) {
     return(cell_NV)
 }
 
-MetaNeighborUSLowMem <- function(dat, study_id, cell_type, node_degree_normalization = TRUE) {
+MetaNeighborUSLowMem <- function(dat, study_id, cell_type,
+                                 node_degree_normalization = TRUE, one_vs_best = FALSE) {
   dat <- normalize_cols(dat)
   colnames(dat) <- paste(study_id, cell_type, sep = "|")
   label_matrix <- design_matrix(colnames(dat))
@@ -163,8 +174,13 @@ MetaNeighborUSLowMem <- function(dat, study_id, cell_type, node_degree_normaliza
         votes[, is_train] <- votes[, is_train] / node_degree[, train_study]
       }
     }
+      
     aurocs <- compute_aurocs(votes, design_matrix(rownames(votes)))
-    result <- rbind(result, aurocs)
+    if (one_vs_best) {
+      result <- rbind(result, compute_1v1_aurocs(votes, aurocs))
+    } else {
+      result <- rbind(result, aurocs)
+    }
   }
   result <- result[, rownames(result)]
   return(result)

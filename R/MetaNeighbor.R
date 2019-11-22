@@ -24,6 +24,11 @@
 #' @param celltype_labels A matrix that indicates the cell type of each sample.
 #' @param genesets Gene sets of interest provided as a list of vectors.
 #' @param bplot default true, beanplot is generated
+#' @param fast_version default value FALSE; a boolean flag indicating whether
+#' to use the fast and low memory version of MetaNeighbor
+#' @param node_degree_normalization default value TRUE; a boolean flag indicating
+#' whether to use normalize votes by dividing through total node degree.
+#' This option is currently only relevant when fast_version = TRUE.
 #' @return A matrix of AUROC scores representing the mean for each gene set
 #' tested for each celltype is returned directly (see \code{\link{neighborVoting}}).
 #'
@@ -40,7 +45,8 @@
 #' @export
 #'
 
-MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets, bplot = TRUE, fast_version = FALSE) {
+MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets,
+                        bplot = TRUE, fast_version = FALSE, node_degree_normalization = TRUE) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
 
@@ -79,7 +85,7 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
         m           <- match(rownames(dat), geneset)
         dat_sub     <- dat[!is.na(m),]
         if (fast_version) {
-          ROCs[[l]] <- score_low_mem(dat_sub, experiment_labels, celltype_labels)
+          ROCs[[l]] <- score_low_mem(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
         } else {
           ROCs[[l]] <- score_default(dat_sub, experiment_labels, celltype_labels)
         }
@@ -118,7 +124,7 @@ score_default <- function(dat_sub, experiment_labels, celltype_labels) {
 }
 
 # Compute ROCs using the approximate low memory version
-score_low_mem <- function(dat_sub, study_id, celltype_labels) {
+score_low_mem <- function(dat_sub, study_id, celltype_labels, node_degree_normalization = TRUE) {
   # remove cells that have zero expressed genes
   nonzero_cells <- Matrix::colSums(dat_sub) > 0
   dat_sub <- dat_sub[, nonzero_cells]
@@ -132,7 +138,8 @@ score_low_mem <- function(dat_sub, study_id, celltype_labels) {
   for (study in unique_study_ids) {
     votes <- compute_votes(candidates = dat_sub[, study_id == study],
                            voters = dat_sub[, study_id != study],
-                           voter_id = celltype_labels[study_id != study,])
+                           voter_id = celltype_labels[study_id != study,],
+                           node_degree_normalization)
     all_aurocs <- compute_aurocs(
       votes, candidate_id = celltype_labels[study_id == study,, drop = FALSE]
     )

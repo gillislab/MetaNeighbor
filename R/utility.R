@@ -10,6 +10,16 @@ normalize_cols <- function(M, ranked = TRUE) {
   return(normalize_cols_cpp(M))
 }
 
+# This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1))) and is a little faster.
+# The point is that the dot product of vectors scaled this way is the correlation coefficient
+# (which is not true using conventional scaling)
+scale_cols = function(M) {
+    apply(M, 2, function(x) {
+        result = x - mean(x)
+        result = result / sqrt(sum(result**2))
+    })
+}
+
 # Compute AUROCs based on neighbor voting and candidate identities
 #
 # candidate_id is a binary matrix indicating the cell type of candidates
@@ -41,6 +51,51 @@ design_matrix <- function(cell_type) {
   }
   colnames(result) <- levels(cell_type)
   return(result)
+}
+
+# Compute AUROCs based on a one-vs-best setting
+# Inputs are one-vs-rest AUROCs and votes
+compute_1v1_aurocs = function(votes, aurocs) {
+  result <- matrix(0, nrow(aurocs), ncol(aurocs), dimnames = dimnames(aurocs))
+  for (i in seq_len(ncol(aurocs))) {
+    top_candidates <- find_top_candidate(votes[,i], aurocs[,i])
+    result[top_candidates$best, i] <- top_candidates$score
+    result[top_candidates$second, i] <- 1-top_candidates$score
+  }
+  return(result)
+}
+
+# Find best and second best matching clusters
+# CAREFUL: the best match is not necessarily the cluster that had highest one-vs-rest score!
+# We need to consider top 5 candidates and match them up to find best match
+find_top_candidate <- function(votes, aurocs) {
+  candidates <- extract_top_candidates(aurocs, 5)
+  best <- candidates[1]
+  votes_best <- votes[names(votes) == best]
+  score <- 1
+  second_best <- candidates[2]
+  for (i in seq(2, length(candidates))) {
+    contender <- candidates[i]
+    votes_contender <- votes[names(votes) == contender]
+    auroc <- c(compute_aurocs(
+      as.matrix(c(votes_best, votes_contender)),
+      as.matrix(rep(c(1,0), c(length(votes_best), length(votes_contender))))
+    ))
+    if (auroc < 0.5) {
+      second_best <- best
+      best <- contender
+      score <- 1 - auroc
+      votes_best <- votes_contender
+    } else if (auroc < score) {
+      score <- auroc
+      second_best <- contender
+    }
+  }
+  return(list(score = score, best = best, second = second_best))
+}
+
+extract_top_candidates <- function(aurocs, n = 10) {
+  return(names(head(sort(aurocs, decreasing=TRUE), n = n)))
 }
 
 # Return study id from a label in format 'study_id|cell_type'
