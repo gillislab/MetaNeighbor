@@ -11,8 +11,7 @@ Description: MetaNeighbor allows users to quantify cell type replicability acros
 biocViews: GeneExpression, GO, MultipleComparison, SingleCell, Transcriptomics
 License: MIT + file LICENSE
 Depends: R(>= 3.0)
-Imports: Rcpp,
-         beanplot (>= 1.2),
+Imports: beanplot (>= 1.2),
          gplots (>= 3.0),
          RColorBrewer (>= 1.1),
          stats (>= 3.0),
@@ -21,8 +20,8 @@ Imports: Rcpp,
          SummarizedExperiment (>= 1.6.5),
          utils (>= 3.0)
 Suggests: knitr (>= 1.17), rmarkdown (>= 1.6), testthat (>= 1.0.2)
-LinkingTo: Rcpp
+LinkingTo:
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Maintainer: Manthan Shah <shah@cshl.edu>

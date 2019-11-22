@@ -7,7 +7,7 @@ normalize_cols <- function(M, ranked = TRUE) {
   if (ranked) {
     M <- matrixStats::colRanks(M, ties.method = "average", preserveShape = TRUE)
   }
-  return(normalize_cols_cpp(M))
+  return(scale_cols(M))
 }
 
 # This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1))) and is a little faster.
