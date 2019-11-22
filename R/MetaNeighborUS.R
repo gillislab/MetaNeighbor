@@ -135,25 +135,38 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type) {
     return(cell_NV)
 }
 
-MetaNeighborUSLowMem <- function(dat, study_id, cell_type) {
+MetaNeighborUSLowMem <- function(dat, study_id, cell_type, node_degree_normalization = TRUE) {
   dat <- normalize_cols(dat)
   colnames(dat) <- paste(study_id, cell_type, sep = "|")
-  studies <- unique(study_id)
-  data_subsets <- find_subsets(study_id, studies)
-  result <- create_result_matrix(colnames(dat))
-  for (study_A_index in seq_along(studies)) {
-    study_A <- dat[, data_subsets[, study_A_index]]
-    for (study_B_index in study_A_index:length(studies)) {
-      study_B <- dat[, data_subsets[, study_B_index]]
-      # study B votes for study A
-      votes <- compute_votes_without_network(study_A, study_B)
-      aurocs <- compute_aurocs(votes)
-      result[rownames(aurocs), colnames(aurocs)] <- aurocs
-      # study A votes for study B
-      votes <- compute_votes_without_network(study_B, study_A)
-      aurocs <- compute_aurocs(votes)
-      result[rownames(aurocs), colnames(aurocs)] <- aurocs
-    }
+  label_matrix <- design_matrix(colnames(dat))
+  cluster_centroids <- dat %*% label_matrix
+  if (node_degree_normalization) {
+    study_matrix <- design_matrix(study_id)
+    study_centroids <- dat %*% study_matrix
+    centroid_study_label <- get_study_id(colnames(cluster_centroids))
+    n_cells_per_cluster <- colSums(label_matrix)
+    n_cells_per_study <- colSums(study_matrix)
   }
+    
+  result <- c()
+  for (test_study in unique(study_id)) {
+    is_test <- study_id == test_study
+    test_dat <- dat[, is_test]
+    votes <- crossprod(test_dat, cluster_centroids)
+    if (node_degree_normalization) {
+      # shift to positive values and normalize node degree
+      votes <- sweep(votes, 2, n_cells_per_cluster, FUN = "+")
+      node_degree <- crossprod(test_dat, study_centroids)
+      node_degree <- sweep(node_degree, 2, n_cells_per_study, FUN = "+")
+      for (train_study in unique(study_id)) {
+        is_train <- centroid_study_label == train_study
+        votes[, is_train] <- votes[, is_train] / node_degree[, train_study]
+      }
+    }
+    aurocs <- compute_aurocs(votes, design_matrix(rownames(votes)))
+    result <- rbind(result, aurocs)
+  }
+  result <- result[, rownames(result)]
   return(result)
 }
+                    
