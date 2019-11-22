@@ -142,7 +142,13 @@ score_low_mem <- function(dat_sub, study_id, celltype_labels) {
   return(list(aurocs))
 }
 
-# Compute neighbor voting for a given set of candidates and voters
-compute_votes <- function(candidates, voters, voter_id) {
-    return(compute_votes_without_network(candidates, voters, voter_id))
+# Compute neighbor voting for a given set of candidates and voters                              
+compute_votes <- function(candidates, voters, voter_id, node_degree_normalization = TRUE) {
+    votes <- crossprod(candidates, voters %*% voter_id)
+    if (node_degree_normalization) {
+      # shift to positive values and normalize node degree
+      votes <- sweep(votes, 2, colSums(voter_id), FUN = "+") /
+           (c(crossprod(candidates, rowSums(voters))) + ncol(voters))
+    }
+    return(votes)
 }
