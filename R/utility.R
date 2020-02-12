@@ -3,11 +3,13 @@
 
 # Scale matrix such that all colums sum to 0 and have l2-norm of 1
 normalize_cols <- function(M, ranked = TRUE) {
-  M <- as.matrix(M)
+  result <- as.matrix(M)
   if (ranked) {
-    M <- matrixStats::colRanks(M, ties.method = "average", preserveShape = TRUE)
+    result <- matrixStats::colRanks(result, ties.method = "average", preserveShape = TRUE)
   }
-  return(scale_cols(M))
+  result <- scale_cols(result)
+  dimnames(result) <- dimnames(M)
+  return(result)
 }
 
 # This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1))) and is a little faster.
