@@ -1,7 +1,7 @@
 Package: MetaNeighbor
 Type: Package
 Title: Single cell replicability analysis
-Version: 0.100.0
+Version: 0.101.0
 Authors@R: c(person("Megan", "Crow", email = "mcrow@cshl.edu",role = c("aut", "cre")),
     person("Sara", "Ballouz", email = "sballouz@cshl.edu",role = c("ctb")),
     person("Manthan", "Shah", email = "shah@cshl.edu",role = c("ctb")),
@@ -22,6 +22,6 @@ Imports: beanplot (>= 1.2),
 Suggests: knitr (>= 1.17), rmarkdown (>= 1.6), testthat (>= 1.0.2)
 LinkingTo:
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 Maintainer: Manthan Shah <shah@cshl.edu>

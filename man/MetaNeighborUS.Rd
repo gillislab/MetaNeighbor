@@ -4,8 +4,17 @@
 \alias{MetaNeighborUS}
 \title{Runs unsupervised version of MetaNeighbor}
 \usage{
-MetaNeighborUS(var_genes, dat, i = 1, study_id, cell_type,
-  fast_version = FALSE)
+MetaNeighborUS(
+  var_genes = c(),
+  dat,
+  i = 1,
+  study_id,
+  cell_type,
+  trained_model = NULL,
+  fast_version = FALSE,
+  node_degree_normalization = TRUE,
+  one_vs_best = FALSE
+)
 }
 \arguments{
 \item{var_genes}{vector of high variance genes.}
@@ -20,8 +29,23 @@ data}
 
 \item{cell_type}{a vector that lists the cell type of each sample}
 
+\item{trained_model}{default value NULL; a matrix containing a trained model
+generated from MetaNeighbor::trainModel. If not NULL, the trained model is
+treated as training data and dat is treated as testing data. If a trained model
+is provided, fast_version will automatically be set to TRUE and var_genes will
+be overridden with genes used to generate the trained_model}
+
 \item{fast_version}{default value FALSE; a boolean flag indicating whether
 to use the fast and low memory version of MetaNeighbor}
+
+\item{node_degree_normalization}{default value TRUE; a boolean flag indicating
+whether to use normalize votes by dividing through total node degree.
+This option is currently only relevant when fast_version = TRUE.}
+
+\item{one_vs_best}{default value FALSE; a boolean flag indicating whether
+to compute AUROCs based on a best match against second best match setting
+(default version is one-vs-rest). This option is currently only relevant
+when fast_version = TRUE.}
 }
 \value{
 The output is a cell type-by-cell type mean AUROC matrix, which is
@@ -29,6 +53,9 @@ built by treating each pair of cell types as testing and training data for
 MetaNeighbor, then taking the average AUROC for each pair (NB scores will not
 be identical because each test cell type is scored out of its own dataset,
 and the differential heterogeneity of datasets will influence scores).
+If trained_model was provided, the output will be a cell type-by-cell
+type AUROC matrix with training clusters as columns and test clusters
+as rows (no swapping of test and train, no averaging).
 }
 \description{
 When it is difficult to know how cell type labels compare across datasets this

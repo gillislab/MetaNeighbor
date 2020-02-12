@@ -11,6 +11,11 @@
 #' data
 #' @param study_id a vector that lists the Study (dataset) ID for each sample
 #' @param cell_type a vector that lists the cell type of each sample
+#' @param trained_model default value NULL; a matrix containing a trained model
+#' generated from MetaNeighbor::trainModel. If not NULL, the trained model is
+#' treated as training data and dat is treated as testing data. If a trained model
+#' is provided, fast_version will automatically be set to TRUE and var_genes will
+#' be overridden with genes used to generate the trained_model
 #' @param fast_version default value FALSE; a boolean flag indicating whether
 #' to use the fast and low memory version of MetaNeighbor
 #' @param node_degree_normalization default value TRUE; a boolean flag indicating
@@ -26,6 +31,9 @@
 #' MetaNeighbor, then taking the average AUROC for each pair (NB scores will not
 #' be identical because each test cell type is scored out of its own dataset,
 #' and the differential heterogeneity of datasets will influence scores).
+#' If trained_model was provided, the output will be a cell type-by-cell
+#' type AUROC matrix with training clusters as columns and test clusters
+#' as rows (no swapping of test and train, no averaging).
 #'
 #' @examples
 #' data(mn_data)
@@ -36,15 +44,17 @@
 #'                              cell_type = mn_data$cell_type)
 #' celltype_NV
 #'
-#' @export
-#'
 
-MetaNeighborUS <- function(var_genes, dat, i = 1, study_id, cell_type,
-                           fast_version = FALSE, node_degree_normalization = TRUE,
-                           one_vs_best = FALSE){
+#' @export
+MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
+                           trained_model = NULL, fast_version = FALSE,
+                           node_degree_normalization = TRUE, one_vs_best = FALSE) {
 
     dat    <- SummarizedExperiment::assay(dat, i = i)
     samples <- colnames(dat)
+    if (!is.null(trained_model)) {
+        var_genes <- rownames(trained_model)[-1]
+    }
 
     #check obj contains study_id
     if(length(study_id)!=length(samples)){
@@ -67,18 +77,26 @@ MetaNeighborUS <- function(var_genes, dat, i = 1, study_id, cell_type,
                 immediate. = TRUE)
     }
     dat <- dat[!is.na(matching_vargenes),]
+    if (!is.null(trained_model)) {
+        trained_model <- trained_model[c("n_cells", rownames(dat)),]
+    }
 
     study_id <- as.character(study_id)
     cell_type <- as.character(cell_type)
 
-    if (fast_version) {
-      cell_NV <- MetaNeighborUSLowMem(dat, study_id, cell_type,
-                                      node_degree_normalization, one_vs_best)
-    } else {
-      cell_NV <- MetaNeighborUSDefault(dat, study_id, cell_type)
-    }
+    if (is.null(trained_model)) {
+        if (fast_version) {
+          cell_NV <- MetaNeighborUSLowMem(dat, study_id, cell_type,
+                                          node_degree_normalization, one_vs_best)
+        } else {
+          cell_NV <- MetaNeighborUSDefault(dat, study_id, cell_type)
+        }
 
-    cell_NV <- (cell_NV+t(cell_NV))/2
+        cell_NV <- (cell_NV+t(cell_NV))/2
+    } else {
+        cell_NV <-  MetaNeighborUS_from_trained(trained_model, dat, study_id, cell_type,
+                                                node_degree_normalization, one_vs_best)
+    }
     return(cell_NV)
 }
 
@@ -148,22 +166,36 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type) {
 MetaNeighborUSLowMem <- function(dat, study_id, cell_type,
                                  node_degree_normalization = TRUE, one_vs_best = FALSE) {
   dat <- normalize_cols(dat)
-  colnames(dat) <- paste(study_id, cell_type, sep = "|")
-  label_matrix <- design_matrix(colnames(dat))
+  label_matrix <- design_matrix(paste(study_id, cell_type, sep = "|"))
   cluster_centroids <- dat %*% label_matrix
-  if (node_degree_normalization) {
-    study_matrix <- design_matrix(study_id)
-    study_centroids <- dat %*% study_matrix
-    centroid_study_label <- get_study_id(colnames(cluster_centroids))
-    n_cells_per_cluster <- colSums(label_matrix)
-    n_cells_per_study <- colSums(study_matrix)
-  }
+  n_cells_per_cluster <- colSums(label_matrix)
     
+  result <- predict_and_score(dat, study_id, cell_type,
+                              cluster_centroids, n_cells_per_cluster,
+                              node_degree_normalization, one_vs_best)
+  result <- result[, rownames(result)]
+  return(result)
+}
+         
+# WARNING: function assumes that data have been normalized with normalize_cols
+predict_and_score <- function(dat, study_id, cell_type,
+                              cluster_centroids, n_cells_per_cluster,
+                              node_degree_normalization = TRUE, one_vs_best = FALSE) {
+  colnames(dat) <- paste(study_id, cell_type, sep = "|")
+  if (node_degree_normalization) {
+    centroid_study_label <- get_study_id(colnames(cluster_centroids))
+    study_matrix <- design_matrix(centroid_study_label)
+    study_centroids <- cluster_centroids %*% study_matrix
+    n_cells_per_study <- n_cells_per_cluster %*% study_matrix
+    train_study_id <- colnames(study_matrix)
+  }
+
   result <- c()
   for (test_study in unique(study_id)) {
     is_test <- study_id == test_study
     test_dat <- dat[, is_test]
     votes <- crossprod(test_dat, cluster_centroids)
+      
     if (node_degree_normalization) {
       # shift to positive values and normalize node degree
       votes <- sweep(votes, 2, n_cells_per_cluster, FUN = "+")
@@ -182,7 +214,17 @@ MetaNeighborUSLowMem <- function(dat, study_id, cell_type,
       result <- rbind(result, aurocs)
     }
   }
-  result <- result[, rownames(result)]
   return(result)
 }
-                    
+
+MetaNeighborUS_from_trained <- function(trained_model, test_dat, study_id, cell_type,
+                                        node_degree_normalization = TRUE, one_vs_best = FALSE) {
+  dat <- normalize_cols(test_dat)
+  cluster_centroids <- trained_model[-1,]
+  n_cells_per_cluster <- trained_model[1,]
+    
+  result <- predict_and_score(dat, study_id, cell_type,
+                              cluster_centroids, n_cells_per_cluster,
+                              node_degree_normalization, one_vs_best)
+  return(result)
+}
