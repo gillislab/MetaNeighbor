@@ -4,8 +4,16 @@
 \alias{MetaNeighbor}
 \title{Runs MetaNeighbor}
 \usage{
-MetaNeighbor(dat, i = 1, experiment_labels, celltype_labels, genesets,
-  bplot = TRUE, fast_version = FALSE)
+MetaNeighbor(
+  dat,
+  i = 1,
+  experiment_labels,
+  celltype_labels,
+  genesets,
+  bplot = TRUE,
+  fast_version = FALSE,
+  node_degree_normalization = TRUE
+)
 }
 \arguments{
 \item{dat}{A SummarizedExperiment object containing gene-by-sample
@@ -22,6 +30,13 @@ sample.}
 \item{genesets}{Gene sets of interest provided as a list of vectors.}
 
 \item{bplot}{default true, beanplot is generated}
+
+\item{fast_version}{default value FALSE; a boolean flag indicating whether
+to use the fast and low memory version of MetaNeighbor}
+
+\item{node_degree_normalization}{default value TRUE; a boolean flag indicating
+whether to use normalize votes by dividing through total node degree.
+This option is currently only relevant when fast_version = TRUE.}
 }
 \value{
 A matrix of AUROC scores representing the mean for each gene set
