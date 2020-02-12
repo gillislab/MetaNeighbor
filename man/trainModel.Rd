@@ -35,7 +35,7 @@ var_genes = variableGenes(dat = mn_data, exp_labels = mn_data$study_id)
 trained_model = trainModel(var_genes = var_genes,
                            dat = mn_data,
                            study_id = mn_data$study_id,
-                           cell_type = mn_data$cell_type))
+                           cell_type = mn_data$cell_type)
 celltype_NV = MetaNeighborUS(trained_model = trained_model,
                              dat = mn_data,
                              study_id = mn_data$study_id,
