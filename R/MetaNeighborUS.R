@@ -53,9 +53,10 @@ MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
     dat    <- SummarizedExperiment::assay(dat, i = i)
     samples <- colnames(dat)
     if (!is.null(trained_model)) {
+        trained_model <- as.matrix(trained_model)
         var_genes <- rownames(trained_model)[-1]
     }
-
+    
     #check obj contains study_id
     if(length(study_id)!=length(samples)){
         stop('study_id length does not match number of samples')
@@ -201,7 +202,7 @@ predict_and_score <- function(dat, study_id, cell_type,
       votes <- sweep(votes, 2, n_cells_per_cluster, FUN = "+")
       node_degree <- crossprod(test_dat, study_centroids)
       node_degree <- sweep(node_degree, 2, n_cells_per_study, FUN = "+")
-      for (train_study in unique(study_id)) {
+      for (train_study in unique(train_study_id)) {
         is_train <- centroid_study_label == train_study
         votes[, is_train] <- votes[, is_train] / node_degree[, train_study]
       }
