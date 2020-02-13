@@ -2,6 +2,8 @@
 
 export(MetaNeighbor)
 export(MetaNeighborUS)
+export(getCellType)
+export(getStudyId)
 export(neighborVoting)
 export(topHits)
 export(trainModel)

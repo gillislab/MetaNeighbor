@@ -100,12 +100,24 @@ extract_top_candidates <- function(aurocs, n = 10) {
   return(names(head(sort(aurocs, decreasing=TRUE), n = n)))
 }
 
-# Return study id from a label in format 'study_id|cell_type'
-get_study_id <- function(cluster_name) {
+#' Return study ID from a label in format 'study_id|cell_type'
+#'
+#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
+#'
+#' @return character vector containing all study ids.
+#'
+#' @export
+getStudyId <- function(cluster_name) {
   return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 1))
 }
 
-# Return cell type from a label in format 'study_id|cell_type'
-get_cell_type <- function(cluster_name) {
-  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 1))
+#' Return cell type from a label in format 'study_id|cell_type'
+#'
+#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
+#'
+#' @return character vector containing all cell type names.
+#'
+#' @export
+getCellType <- function(cluster_name) {
+  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 2))
 }

@@ -184,7 +184,7 @@ predict_and_score <- function(dat, study_id, cell_type,
                               node_degree_normalization = TRUE, one_vs_best = FALSE) {
   colnames(dat) <- paste(study_id, cell_type, sep = "|")
   if (node_degree_normalization) {
-    centroid_study_label <- get_study_id(colnames(cluster_centroids))
+    centroid_study_label <- getStudyId(colnames(cluster_centroids))
     study_matrix <- design_matrix(centroid_study_label)
     study_centroids <- cluster_centroids %*% study_matrix
     n_cells_per_study <- n_cells_per_cluster %*% study_matrix
