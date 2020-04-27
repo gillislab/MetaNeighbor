@@ -1,7 +1,7 @@
 Package: MetaNeighbor
 Type: Package
 Title: Single cell replicability analysis
-Version: 1.7.0
+Version: 1.8.0
 Authors@R: c(person("Megan", "Crow", email = "mcrow@cshl.edu",role = c("aut", "cre")),
     person("Sara", "Ballouz", email = "sballouz@cshl.edu",role = c("ctb")),
     person("Manthan", "Shah", email = "shah@cshl.edu",role = c("ctb")),
