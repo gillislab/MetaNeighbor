@@ -58,7 +58,7 @@ design_matrix <- function(cell_type) {
 # Compute AUROCs based on a one-vs-best setting
 # Inputs are one-vs-rest AUROCs and votes
 compute_1v1_aurocs = function(votes, aurocs) {
-  result <- matrix(0, nrow(aurocs), ncol(aurocs), dimnames = dimnames(aurocs))
+  result <- matrix(NA, nrow(aurocs), ncol(aurocs), dimnames = dimnames(aurocs))
   for (i in seq_len(ncol(aurocs))) {
     top_candidates <- find_top_candidate(votes[,i], aurocs[,i])
     result[top_candidates$best, i] <- top_candidates$score
