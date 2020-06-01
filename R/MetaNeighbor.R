@@ -28,7 +28,6 @@
 #' to use the fast and low memory version of MetaNeighbor
 #' @param node_degree_normalization default value TRUE; a boolean flag indicating
 #' whether to use normalize votes by dividing through total node degree.
-#' This option is currently only relevant when fast_version = TRUE.
 #' @return A matrix of AUROC scores representing the mean for each gene set
 #' tested for each celltype is returned directly (see \code{\link{neighborVoting}}).
 #'
@@ -87,7 +86,7 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
         if (fast_version) {
           ROCs[[l]] <- score_low_mem(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
         } else {
-          ROCs[[l]] <- score_default(dat_sub, experiment_labels, celltype_labels)
+          ROCs[[l]] <- score_default(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
         }
     }
 
@@ -110,7 +109,7 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
 }
 
 # Compute ROCs according to the default procedure
-score_default <- function(dat_sub, experiment_labels, celltype_labels) {
+score_default <- function(dat_sub, experiment_labels, celltype_labels, node_degree_normalization = TRUE) {
   dat_sub     <- stats::cor(dat_sub, method = "s")
   dat_sub     <- as.matrix(dat_sub)
   rank_dat    <- dat_sub
@@ -120,7 +119,8 @@ score_default <- function(dat_sub, experiment_labels, celltype_labels) {
   return(neighborVoting(experiment_labels,
                         celltype_labels,
                         rank_dat,
-                        means = FALSE))
+                        means = FALSE,
+                        node_degree_normalization))
 }
 
 # Compute ROCs using the approximate low memory version

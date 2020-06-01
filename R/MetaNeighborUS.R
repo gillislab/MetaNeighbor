@@ -20,7 +20,6 @@
 #' to use the fast and low memory version of MetaNeighbor
 #' @param node_degree_normalization default value TRUE; a boolean flag indicating
 #' whether to use normalize votes by dividing through total node degree.
-#' This option is currently only relevant when fast_version = TRUE.
 #' @param one_vs_best default value FALSE; a boolean flag indicating whether
 #' to compute AUROCs based on a best match against second best match setting
 #' (default version is one-vs-rest). This option is currently only relevant
@@ -90,7 +89,8 @@ MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
           cell_NV <- MetaNeighborUSLowMem(dat, study_id, cell_type,
                                           node_degree_normalization, one_vs_best)
         } else {
-          cell_NV <- MetaNeighborUSDefault(dat, study_id, cell_type)
+          cell_NV <- MetaNeighborUSDefault(dat, study_id, cell_type,
+                                           node_degree_normalization)
         }
 
         cell_NV <- (cell_NV+t(cell_NV))/2
@@ -101,7 +101,7 @@ MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
     return(cell_NV)
 }
 
-MetaNeighborUSDefault <- function(dat, study_id, cell_type) {
+MetaNeighborUSDefault <- function(dat, study_id, cell_type, node_degree_normalization = TRUE) {
     dat <- as.matrix(dat)
     pheno <- as.data.frame(cbind(study_id,cell_type), stringsAsFactors = FALSE)
     pheno$StudyID_CT <- paste(pheno$study_id, pheno$cell_type, sep = "|")
@@ -122,10 +122,15 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type) {
     rank_data[is.na(rank_data)] <- 0
     rank_data   <- rank_data/max(rank_data)
     sum_in      <- (rank_data) %*% cell_labels
-    sum_all     <- matrix(apply(rank_data, MARGIN = 2, FUN = sum),
-                          ncol = dim(sum_in)[2],
-                          nrow = dim(sum_in)[1])
-    predicts    <- sum_in/sum_all
+    
+    if (node_degree_normalization) {
+        sum_all     <- matrix(apply(rank_data, MARGIN = 2, FUN = sum),
+                              ncol = dim(sum_in)[2],
+                              nrow = dim(sum_in)[1])
+        predicts    <- sum_in/sum_all
+    } else {
+        predicts <- sum_in        
+    }
 
     cell_NV     <- matrix(0, ncol=length(celltypes), nrow=length(celltypes))
     colnames(cell_NV) <- colnames(cell_labels)

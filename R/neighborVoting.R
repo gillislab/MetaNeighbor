@@ -11,6 +11,8 @@
 #' @param network sample by sample adjacency matrix, ranked and standardized
 #' between 0-1
 #' @param means default \code{TRUE}, determines output formatting
+#' @param node_degree_normalization default \code_{TRUE}, should predictions
+#' be divided by node degree?
 #'
 #' @return If \code{means = TRUE} (default) a vector containing the mean of
 #' AUROC values across cross-validation folds will be returned. If FALSE a list
@@ -35,7 +37,8 @@
 neighborVoting <- function (exp_labels,
                             cell_labels,
                             network,
-                            means=TRUE){
+                            means=TRUE,
+                            node_degree_normalization=TRUE){
 
     # cell_labels : needs to be in 1s and 0s
     x1 <- dim(cell_labels)[2]
@@ -56,13 +59,16 @@ neighborVoting <- function (exp_labels,
     #print("Get sums - mat. mul.")
     sum_in  <- (network %*% test_cell_labels)
 
-    #print("Get sums - calc sumall")
-    sum_all <- matrix(apply(network, MARGIN = 2, FUN = sum),
-                        ncol = dim(sum_in)[2],
-                        nrow = dim(sum_in)[1])
-
     #print("Get sums - calc predicts")
-    predicts <- sum_in/sum_all
+    if (node_degree_normalization) {
+        #print("Get sums - calc sumall")
+        sum_all <- matrix(apply(network, MARGIN = 2, FUN = sum),
+                          ncol = dim(sum_in)[2],
+                          nrow = dim(sum_in)[1])
+        predicts <- sum_in/sum_all
+    } else {
+        predicts <- sum_in
+    }
 
     #print("Hide training data")
     nans <- which(test_cell_labels == 1, arr.ind = TRUE)
