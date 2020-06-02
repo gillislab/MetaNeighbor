@@ -22,6 +22,6 @@ Imports: beanplot (>= 1.2),
 Suggests: knitr (>= 1.17), rmarkdown (>= 1.6), testthat (>= 1.0.2)
 LinkingTo:
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr
 Maintainer: Manthan Shah <shah@cshl.edu>

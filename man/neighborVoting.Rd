@@ -4,7 +4,13 @@
 \alias{neighborVoting}
 \title{Runs the neighbor voting algorithm.}
 \usage{
-neighborVoting(exp_labels, cell_labels, network, means = TRUE)
+neighborVoting(
+  exp_labels,
+  cell_labels,
+  network,
+  means = TRUE,
+  node_degree_normalization = TRUE
+)
 }
 \arguments{
 \item{exp_labels}{numerical vector that indicates the dataset source of
@@ -17,6 +23,9 @@ of each sample (0-absent; 1-present)}
 between 0-1}
 
 \item{means}{default \code{TRUE}, determines output formatting}
+
+\item{node_degree_normalization}{default \code{TRUE}, should predictions
+be divided by node degree?}
 }
 \value{
 If \code{means = TRUE} (default) a vector containing the mean of

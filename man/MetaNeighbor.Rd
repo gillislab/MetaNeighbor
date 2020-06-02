@@ -35,8 +35,7 @@ sample.}
 to use the fast and low memory version of MetaNeighbor}
 
 \item{node_degree_normalization}{default value TRUE; a boolean flag indicating
-whether to use normalize votes by dividing through total node degree.
-This option is currently only relevant when fast_version = TRUE.}
+whether to use normalize votes by dividing through total node degree.}
 }
 \value{
 A matrix of AUROC scores representing the mean for each gene set

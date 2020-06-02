@@ -11,7 +11,7 @@
 #' @param network sample by sample adjacency matrix, ranked and standardized
 #' between 0-1
 #' @param means default \code{TRUE}, determines output formatting
-#' @param node_degree_normalization default \code_{TRUE}, should predictions
+#' @param node_degree_normalization default \code{TRUE}, should predictions
 #' be divided by node degree?
 #'
 #' @return If \code{means = TRUE} (default) a vector containing the mean of

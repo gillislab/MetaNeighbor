@@ -4,7 +4,8 @@
 \name{mn_data}
 \alias{mn_data}
 \title{mn_data}
-\format{\describe{
+\format{
+\describe{
   \item{Gene matrix}{A gene-by-sample expression matrix consisting of 3157
   rows (genes) and 1051 columns (cell types)}
   \item{cell_labels}{1051x1 binary matrix that indicates whether a cell
@@ -16,7 +17,8 @@
   al)}
   \item{cell_type}{A character vector of length 1051 that indicates the
   cell-type of each sample}
-}}
+}
+}
 \source{
 Dataset:\url{https://github.com/mm-shah/MetaNeighbor/tree/master/data} 1. Zeisal et al. \url{http://science.sciencemag.org/content/347/6226/1138}
 2. Tasic et al. \url{http://www.nature.com/neuro/journal/v19/n2/full/nn.4216.html}

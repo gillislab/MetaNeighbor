@@ -13,7 +13,8 @@ MetaNeighborUS(
   trained_model = NULL,
   fast_version = FALSE,
   node_degree_normalization = TRUE,
-  one_vs_best = FALSE
+  one_vs_best = FALSE,
+  symmetric_output = TRUE
 )
 }
 \arguments{
@@ -39,13 +40,15 @@ be overridden with genes used to generate the trained_model}
 to use the fast and low memory version of MetaNeighbor}
 
 \item{node_degree_normalization}{default value TRUE; a boolean flag indicating
-whether to use normalize votes by dividing through total node degree.
-This option is currently only relevant when fast_version = TRUE.}
+whether to use normalize votes by dividing through total node degree.}
 
 \item{one_vs_best}{default value FALSE; a boolean flag indicating whether
 to compute AUROCs based on a best match against second best match setting
 (default version is one-vs-rest). This option is currently only relevant
 when fast_version = TRUE.}
+
+\item{symmetric_output}{default value TRUE; a boolean flag indicating whether
+to average AUROCs in the output matrix.}
 }
 \value{
 The output is a cell type-by-cell type mean AUROC matrix, which is
@@ -53,8 +56,10 @@ built by treating each pair of cell types as testing and training data for
 MetaNeighbor, then taking the average AUROC for each pair (NB scores will not
 be identical because each test cell type is scored out of its own dataset,
 and the differential heterogeneity of datasets will influence scores).
+If symmetric_output is set to FALSE, the training cell types are displayed
+as columns and the test cell types are displayed as rows.
 If trained_model was provided, the output will be a cell type-by-cell
-type AUROC matrix with training clusters as columns and test clusters
+type AUROC matrix with training cell types as columns and test cell types
 as rows (no swapping of test and train, no averaging).
 }
 \description{
