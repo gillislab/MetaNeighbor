@@ -124,6 +124,7 @@ score_default <- function(dat_sub, experiment_labels, celltype_labels, node_degr
 }
 
 # Compute ROCs using the approximate low memory version
+# For detailed description of vectorized equations, see MetaNeighborUS.R
 score_low_mem <- function(dat_sub, study_id, celltype_labels, node_degree_normalization = TRUE) {
   # remove cells that have zero expressed genes
   nonzero_cells <- Matrix::colSums(dat_sub) > 0

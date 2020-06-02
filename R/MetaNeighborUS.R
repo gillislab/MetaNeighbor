@@ -175,6 +175,30 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type, node_degree_normaliz
     return(cell_NV)
 }
 
+# The fast version is vectorized according to the following equations
+# (Note that the point of these equations is to *never* compute the cell-cell network
+#  by reordering the matrix operations):
+#  - INPUTS:
+#    + Q = test (Query) data (genes x cells)
+#    + R = train (Ref) data (genes x cells)
+#    + L = binary encoding of training cell types (Labels) (cells x cell types)
+#    + S = binary encoding of train Studies (cells x studies)
+#  - NOTATIONS:
+#    + X* = normalize_cols(X) ~ scale(colRanks(X)) denotes normalized data
+#           (Spearman correlation becomes a simple dot product on normalized data)
+#    + N = Spearman(Q,R) = t(Q*).R* is the cell-cell similarity network
+#    + CL = R*.L are the cell type centroids (in the normalized space)
+#    + CS = R*.S are the study centroids (in the normalized space)
+#    + 1.L = colSums(L) = number of cells per (train) cell type
+#    + 1.S = colSums(S) = number of cells per (train) study
+#  - WITHOUT node degree normalization
+#    + Votes = N.L = t(Q*).R*.L = t(Q*).CL
+#  - WITH node degree normalization
+#    + Network becomes N+1 to avoid negative values
+#    + Votes = (N+1).L = N.L + 1.L = t(Q*).CL + 1.L
+#    + Node degree = (N+1).S = t(Q*).CS + 1.S
+#    + Note: Node degree is computed independently for each train study.
+#
 MetaNeighborUSLowMem <- function(dat, study_id, cell_type,
                                  node_degree_normalization = TRUE, one_vs_best = FALSE) {
   dat <- normalize_cols(dat)
