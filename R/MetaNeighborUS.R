@@ -24,14 +24,18 @@
 #' to compute AUROCs based on a best match against second best match setting
 #' (default version is one-vs-rest). This option is currently only relevant
 #' when fast_version = TRUE.
+#' @param symmetric_output default value TRUE; a boolean flag indicating whether
+#' to average AUROCs in the output matrix.
 #'
 #' @return The output is a cell type-by-cell type mean AUROC matrix, which is
 #' built by treating each pair of cell types as testing and training data for
 #' MetaNeighbor, then taking the average AUROC for each pair (NB scores will not
 #' be identical because each test cell type is scored out of its own dataset,
 #' and the differential heterogeneity of datasets will influence scores).
+#' If symmetric_output is set to FALSE, the training cell types are displayed
+#' as columns and the test cell types are displayed as rows.
 #' If trained_model was provided, the output will be a cell type-by-cell
-#' type AUROC matrix with training clusters as columns and test clusters
+#' type AUROC matrix with training cell types as columns and test cell types
 #' as rows (no swapping of test and train, no averaging).
 #'
 #' @examples
@@ -47,7 +51,8 @@
 #' @export
 MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
                            trained_model = NULL, fast_version = FALSE,
-                           node_degree_normalization = TRUE, one_vs_best = FALSE) {
+                           node_degree_normalization = TRUE, one_vs_best = FALSE,
+                           symmetric_output = TRUE) {
 
     dat    <- SummarizedExperiment::assay(dat, i = i)
     samples <- colnames(dat)
@@ -92,8 +97,9 @@ MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
           cell_NV <- MetaNeighborUSDefault(dat, study_id, cell_type,
                                            node_degree_normalization)
         }
-
-        cell_NV <- (cell_NV+t(cell_NV))/2
+        if (symmetric_output) {
+            cell_NV <- (cell_NV+t(cell_NV))/2
+        }
     } else {
         cell_NV <-  MetaNeighborUS_from_trained(trained_model, dat, study_id, cell_type,
                                                 node_degree_normalization, one_vs_best)
