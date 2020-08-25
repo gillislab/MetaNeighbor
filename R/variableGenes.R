@@ -5,9 +5,10 @@
 #'
 #' @param dat SummarizedExperiment object containing gene-by-sample
 #' expression matrix.
-#' @param i default value 1; non-zero index value of assay containing the matrix data
 #' @param exp_labels character vector that denotes the source (Study ID) of
 #' each sample.
+#' @param i default value 1; non-zero index value of assay containing the matrix data
+
 #'
 #' @return The output is a vector of gene names that are highly variable in
 #' every experiment (intersect)
@@ -20,7 +21,7 @@
 #' @export
 #'
 
-variableGenes <- function(dat, i = 1, exp_labels) {
+variableGenes <- function(dat, exp_labels, i = 1) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
     var_genes1 <- vector("list")
