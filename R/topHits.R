@@ -34,9 +34,9 @@
 #'
 
 topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
-    
-    dat    <- SummarizedExperiment::assay(dat, i = i)
     samples <- colnames(dat)
+    study_id <- as.character(study_id)
+    cell_type <- as.character(cell_type)
     
     #check obj contains study_id
     if(length(study_id)!=length(samples)){
