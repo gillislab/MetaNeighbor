@@ -45,7 +45,8 @@
 #'
 
 MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets,
-                        bplot = TRUE, fast_version = FALSE, node_degree_normalization = TRUE) {
+                        bplot = TRUE, fast_version = FALSE, node_degree_normalization = TRUE,
+                        batch_size = 10) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
     
@@ -82,18 +83,25 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
     rownames(nv_mat)  <- names(genesets)
     colnames(nv_mat)  <- colnames(celltype_labels)
 
-    for(l in seq_along(genesets)){
-        print(names(genesets)[l])
-        geneset     <- genesets[[l]]
-        m           <- match(rownames(dat), geneset)
-        dat_sub     <- dat[!is.na(m),]
-        if (fast_version) {
-          ROCs[[l]] <- score_low_mem(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
-        } else {
-          ROCs[[l]] <- score_default(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
+    dat <- dat[rownames(dat) %in% unlist(genesets),]
+    for (i in 1:ceiling(length(genesets)/batch_size)) {
+        batch_start <- batch_size*(i-1)+1
+        batch_end <- min(batch_start+batch_size-1, length(genesets))
+        subsets <- genesets[batch_start:batch_end]
+        subdat <- dat[rownames(dat) %in% unlist(subsets),]
+        for(l in names(subsets)){
+            print(l)
+            geneset     <- subsets[[l]]
+            m           <- match(rownames(subdat), geneset)
+            dat_sub     <- subdat[!is.na(m),]
+            if (fast_version) {
+              ROCs[[l]] <- score_low_mem(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
+            } else {
+              ROCs[[l]] <- score_default(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
+            }
         }
     }
-
+    
     for(i in seq_along(ROCs)){
         nv_mat[i,] <- round(rowMeans(ROCs[[i]][[1]], na.rm = TRUE),3)
     }
