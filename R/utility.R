@@ -93,6 +93,7 @@ design_matrix <- function(cell_type) {
 compute_1v1_aurocs = function(votes, aurocs) {
   result <- matrix(NA, nrow(aurocs), ncol(aurocs), dimnames = dimnames(aurocs))
   for (i in seq_len(ncol(aurocs))) {
+    if (all(is.na(aurocs[,i]))) { next }
     top_candidates <- find_top_candidate(votes[,i], aurocs[,i])
     result[top_candidates$best, i] <- top_candidates$score
     result[top_candidates$second, i] <- 1-top_candidates$score
