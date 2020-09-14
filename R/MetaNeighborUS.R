@@ -110,7 +110,7 @@ MetaNeighborUS <- function(var_genes = c(), dat, i = 1, study_id, cell_type,
 MetaNeighborUSDefault <- function(dat, study_id, cell_type, node_degree_normalization = TRUE) {
     dat <- as.matrix(dat)
     pheno <- as.data.frame(cbind(study_id,cell_type), stringsAsFactors = FALSE)
-    pheno$StudyID_CT <- paste(pheno$study_id, pheno$cell_type, sep = "|")
+    pheno$StudyID_CT <- makeClusterName(pheno$study_id, pheno$cell_type)
     celltypes   <- unique(pheno$StudyID_CT)
     cell_labels <- matrix(0, ncol=length(celltypes), nrow=dim(pheno)[1])
     rownames(cell_labels) <-colnames(dat)
@@ -193,7 +193,7 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type, node_degree_normaliz
 #    + 1.S = colSums(S) = number of cells per (train) study
 #  - WITHOUT node degree normalization
 #    + Votes = N.L = t(Q*).R*.L = t(Q*).CL
-#  - WITH node degree normalization
+#  - WITH node degree normalization
 #    + Network becomes N+1 to avoid negative values
 #    + Votes = (N+1).L = N.L + 1.L = t(Q*).CL + 1.L
 #    + Node degree = (N+1).S = t(Q*).CS + 1.S
@@ -202,11 +202,13 @@ MetaNeighborUSDefault <- function(dat, study_id, cell_type, node_degree_normaliz
 MetaNeighborUSLowMem <- function(dat, study_id, cell_type,
                                  node_degree_normalization = TRUE, one_vs_best = FALSE) {
   dat <- normalize_cols(dat)
-  label_matrix <- design_matrix(paste(study_id, cell_type, sep = "|"))
+  label_matrix <- design_matrix(makeClusterName(study_id, cell_type))
+  is_na <- matrixStats::colAnyNAs(dat)
+  dat <- dat[, !is_na]
+  label_matrix <- label_matrix[!is_na,]
   cluster_centroids <- dat %*% label_matrix
   n_cells_per_cluster <- colSums(label_matrix)
-    
-  result <- predict_and_score(dat, study_id, cell_type,
+  result <- predict_and_score(dat, study_id[!is_na], cell_type[!is_na],
                               cluster_centroids, n_cells_per_cluster,
                               node_degree_normalization, one_vs_best)
   result <- result[, rownames(result)]
@@ -217,7 +219,7 @@ MetaNeighborUSLowMem <- function(dat, study_id, cell_type,
 predict_and_score <- function(dat, study_id, cell_type,
                               cluster_centroids, n_cells_per_cluster,
                               node_degree_normalization = TRUE, one_vs_best = FALSE) {
-  colnames(dat) <- paste(study_id, cell_type, sep = "|")
+  colnames(dat) <- makeClusterName(study_id, cell_type)
   if (node_degree_normalization) {
     centroid_study_label <- getStudyId(colnames(cluster_centroids))
     study_matrix <- design_matrix(centroid_study_label)
@@ -231,12 +233,12 @@ predict_and_score <- function(dat, study_id, cell_type,
     is_test <- study_id == test_study
     test_dat <- dat[, is_test]
     votes <- crossprod(test_dat, cluster_centroids)
-      
+
     if (node_degree_normalization) {
       # shift to positive values and normalize node degree
-      votes <- sweep(votes, 2, n_cells_per_cluster, FUN = "+")
+      votes <- sweep(votes, 2, n_cells_per_cluster, "+")
       node_degree <- crossprod(test_dat, study_centroids)
-      node_degree <- sweep(node_degree, 2, n_cells_per_study, FUN = "+")
+      node_degree <- sweep(node_degree, 2, n_cells_per_study, "+")
       for (train_study in unique(train_study_id)) {
         is_train <- centroid_study_label == train_study
         votes[, is_train] <- votes[, is_train] / node_degree[, train_study]
@@ -256,10 +258,12 @@ predict_and_score <- function(dat, study_id, cell_type,
 MetaNeighborUS_from_trained <- function(trained_model, test_dat, study_id, cell_type,
                                         node_degree_normalization = TRUE, one_vs_best = FALSE) {
   dat <- normalize_cols(test_dat)
+  is_na <- matrixStats::colAnyNAs(dat)
+  dat <- dat[, !is_na]
   cluster_centroids <- trained_model[-1,]
   n_cells_per_cluster <- trained_model[1,]
     
-  result <- predict_and_score(dat, study_id, cell_type,
+  result <- predict_and_score(dat, study_id[!is_na], cell_type[!is_na],
                               cluster_centroids, n_cells_per_cluster,
                               node_degree_normalization, one_vs_best)
   return(result)
