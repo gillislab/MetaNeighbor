@@ -70,20 +70,20 @@ variableGenes <- function(dat, i = 1, exp_labels,
     return(result)
 }
 
-MN_colVars = function(M) {
+MN_colVars <- function(M) {
     if (is(M, "dgCMatrix")) {
-        result = (Matrix::colMeans(M**2) - Matrix::colMeans(M)**2)*nrow(M)/(nrow(M)-1)
+        result <- (Matrix::colMeans(M**2) - Matrix::colMeans(M)**2)*nrow(M)/(nrow(M)-1)
     } else {
-        result = matrixStats::colVars(as.matrix(M))
-        names(result) = colnames(M)
+        result <- matrixStats::colVars(as.matrix(M))
+        names(result) <- colnames(M)
     }
     return(result)
 }
 
-MN_colMedians = function(M, downsampling_size = 0) {
+MN_colMedians <- function(M, downsampling_size = 0) {
     if (downsampling_size > 0 & downsampling_size < ncol(M)) {
-        M = M[, colnames(M) %in% sample(colnames(M), downsampling_size, replace = FALSE)]
+        M <- M[, colnames(M) %in% sample(colnames(M), downsampling_size, replace = FALSE)]
     }
-    result = matrixStats::colMedians(as.matrix(M))
+    result <- matrixStats::colMedians(as.matrix(M))
     return(result)
 }
