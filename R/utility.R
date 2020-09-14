@@ -50,10 +50,9 @@ normalize_cols <- function(M, ranked = TRUE) {
 # The point is that the dot product of vectors scaled this way is the correlation coefficient
 # (which is not true using conventional scaling)
 scale_cols = function(M) {
-    apply(M, 2, function(x) {
-        result = x - mean(x)
-        result = result / sqrt(sum(result**2))
-    })
+    cm = colMeans(M)
+    cnorm = 1 / sqrt(colSums(M**2) - nrow(M) * cm**2)
+    matrixStats::t_tx_OP_y(matrixStats::t_tx_OP_y(M, cm, "-"), cnorm, "*")
 }
 
 # Compute AUROCs based on neighbor voting and candidate identities
