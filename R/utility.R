@@ -1,6 +1,40 @@
 # Contains a collection of utility functions
 #
 
+#' Make cluster names in format 'study_id|cell_type'
+#'
+#' @param study_id character vector containing study ids.
+#' @param cell_type character vector containing cell type names (must be same length as study_id).
+#'
+#' @return cluster_name character vector containing cluster names in the format study_id|cell_type.
+#'
+#' @export
+makeClusterName <- function(study_id, cell_type) {
+  return(paste(study_id, cell_type, sep = "|"))
+}
+
+#' Return study ID from a label in format 'study_id|cell_type'
+#'
+#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
+#'
+#' @return character vector containing all study ids.
+#'
+#' @export
+getStudyId <- function(cluster_name) {
+  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 1))
+}
+
+#' Return cell type from a label in format 'study_id|cell_type'
+#'
+#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
+#'
+#' @return character vector containing all cell type names.
+#'
+#' @export
+getCellType <- function(cluster_name) {
+  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 2))
+}
+
 # Scale matrix such that all colums sum to 0 and have l2-norm of 1
 normalize_cols <- function(M, ranked = TRUE) {
   result <- as.matrix(M)
@@ -100,24 +134,3 @@ extract_top_candidates <- function(aurocs, n = 10) {
   return(names(head(sort(aurocs, decreasing=TRUE), n = n)))
 }
 
-#' Return study ID from a label in format 'study_id|cell_type'
-#'
-#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
-#'
-#' @return character vector containing all study ids.
-#'
-#' @export
-getStudyId <- function(cluster_name) {
-  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 1))
-}
-
-#' Return cell type from a label in format 'study_id|cell_type'
-#'
-#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
-#'
-#' @return character vector containing all cell type names.
-#'
-#' @export
-getCellType <- function(cluster_name) {
-  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 2))
-}
