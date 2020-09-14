@@ -167,8 +167,9 @@ compute_votes <- function(candidates, voters, voter_id, node_degree_normalizatio
     votes <- crossprod(candidates, voters %*% voter_id)
     if (node_degree_normalization) {
       # shift to positive values and normalize node degree
-      votes <- sweep(votes, 2, colSums(voter_id), FUN = "+") /
-           (c(crossprod(candidates, rowSums(voters))) + ncol(voters))
+      votes <- matrixStats::t_tx_OP_y(votes, colSums(voter_id), "+")
+      node_degree <- colSums(candidates*rowSums(voters)) + ncol(voters)
+      votes <- votes / node_degree
     }
     return(votes)
 }
