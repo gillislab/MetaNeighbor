@@ -140,18 +140,18 @@ score_default <- function(dat_sub, experiment_labels, celltype_labels, node_degr
 score_low_mem <- function(dat_sub, study_id, celltype_labels, node_degree_normalization = TRUE) {
   # remove cells that have zero expressed genes
   nonzero_cells <- Matrix::colSums(dat_sub) > 0
-  dat_sub <- dat_sub[, nonzero_cells]
+  dat_sub <- dat_sub[, nonzero_cells, drop=FALSE]
   study_id <- study_id[nonzero_cells]
-  celltype_labels <- as.matrix(celltype_labels[nonzero_cells,])
+  celltype_labels <- as.matrix(celltype_labels[nonzero_cells,,drop=FALSE])
 
   dat_sub <- normalize_cols(dat_sub)
-
+    
   unique_study_ids <- unique(study_id)
   aurocs <- c()
   for (study in unique_study_ids) {
-    votes <- compute_votes(candidates = dat_sub[, study_id == study],
-                           voters = dat_sub[, study_id != study],
-                           voter_id = celltype_labels[study_id != study,],
+    votes <- compute_votes(candidates = dat_sub[, study_id == study, drop=FALSE],
+                           voters = dat_sub[, study_id != study, drop=FALSE],
+                           voter_id = celltype_labels[study_id != study,, drop=FALSE],
                            node_degree_normalization)
     all_aurocs <- compute_aurocs(
       votes, candidate_id = celltype_labels[study_id == study,, drop = FALSE]
