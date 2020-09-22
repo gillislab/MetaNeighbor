@@ -41,12 +41,14 @@ makeClusterGraph <- function(best_hits, low_threshold = 0, high_threshold = 1) {
 #' @param cell_type Vector with cell type labels provided to MetaNeighborUS
 #' to compute AUROCs stored in graph.
 #' @param size_factor Numeric value controling the size of nodes and edges.
+#' @param legend_cex Numeric value controling the size of the legend.
 #' @param study_cols Named vector where values are RGB colors and names are
 #' unique study identifiers (corresponding to study_id). If NULL, a default
 #' color palette is used.
 #'
 #' @export
-plotClusterGraph <- function(graph, study_id, cell_type, size_factor=1, study_cols=NULL) {
+plotClusterGraph <- function(graph, study_id, cell_type, size_factor=1,
+                             legend_cex = 1, study_cols=NULL) {
     vertex_colors <- study_cols
     if (is.null(vertex_colors)) {
         vertex_colors <- make_vertex_colors(graph)
@@ -56,7 +58,8 @@ plotClusterGraph <- function(graph, study_id, cell_type, size_factor=1, study_co
     edge_width <- igraph::E(graph)$width * size_factor
     plot(graph, vertex.label.cex=0.2*size_factor, edge.arrow.size=.05*size_factor**1.5, vertex.frame.color = NA,
          vertex.label.font=2, vertex.size = vertex_size, edge.width = edge_width)
-    legend("topright", legend = names(vertex_colors), pt.bg = vertex_colors, pt.cex = 1, cex = 0.5, bty="n", pch=21)
+    legend("topright", legend = names(vertex_colors), pt.bg = vertex_colors,
+           pt.cex = legend_cex, cex = 0.5*legend_cex, bty="n", pch=21)
 }
 
 # Set node color (dataset) and size (# cells), edge color and size (AUROC)
