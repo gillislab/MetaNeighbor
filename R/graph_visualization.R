@@ -49,7 +49,7 @@ makeClusterGraph <- function(best_hits, low_threshold = 0, high_threshold = 1) {
 plotClusterGraph <- function(graph, study_id, cell_type, size_factor=1, study_cols=NULL) {
     vertex_colors <- study_cols
     if (is.null(vertex_colors)) {
-        vertex_colors <- make_vertex_colors(graph, study_cols)
+        vertex_colors <- make_vertex_colors(graph)
     }
     graph <- color_graph(graph, makeClusterName(study_id, cell_type), vertex_colors)
     vertex_size <- igraph::V(graph)$size * size_factor
