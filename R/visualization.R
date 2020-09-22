@@ -247,8 +247,9 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
     
     summary %>%
         dplyr::mutate(gene = factor(gene, levels = rev(row_order))) %>%
-        ggplot2::ggplot(aes(x = cell_type, y = gene, size = percent_expressing,
-                            col = average_expression)) +
+        ggplot2::ggplot(ggplot2::aes(x = cell_type, y = gene,
+                                     size = percent_expressing,
+                                     col = average_expression)) +
         ggplot2::geom_point() + 
         ggplot2::scale_radius(limits = c(0,1)) +
         ggplot2::theme_bw() +
