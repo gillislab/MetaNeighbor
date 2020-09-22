@@ -1,9 +1,9 @@
 #' Pretrains model for the unsupervised version of MetaNeighbor
 #'
-#' When comparing clusters to a large reference dataset, this function summarizes
-#' the gene-by-cell matrix into a much smaller highly variable gene-by-cluster matrix
-#' which can be fed as training data into MetaNeighborUS, resulting in substantial
-#' time and memory savings.
+#' When comparing clusters to a large reference dataset, this function
+#' summarizes the gene-by-cell matrix into a much smaller highly variable
+#' gene-by-cluster matrix which can be fed as training data into MetaNeighborUS,
+#' resulting in substantial time and memory savings.
 #'
 #' @param var_genes vector of high variance genes.
 #' @param dat SummarizedExperiment object containing gene-by-sample
@@ -13,8 +13,8 @@
 #' @param study_id a vector that lists the Study (dataset) ID for each sample
 #' @param cell_type a vector that lists the cell type of each sample
 #'
-#' @return The output is a gene-by-cluster matrix that contains all the information
-#' necessary to run MetaNeighborUS from a pre-trained model.
+#' @return The output is a gene-by-cluster matrix that contains all the
+#' information necessary to run MetaNeighborUS from a pre-trained model.
 #'
 #' @examples
 #' data(mn_data)
@@ -29,7 +29,6 @@
 #'                              cell_type = mn_data$cell_type)
 #' celltype_NV
 #'
-
 #' @export
 trainModel <- function(var_genes, dat, i = 1, study_id, cell_type) {
 

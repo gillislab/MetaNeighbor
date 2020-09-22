@@ -19,9 +19,10 @@
 #' expression matrix.
 #' @param i default value 1; non-zero index value of assay containing the matrix
 #' data
-#' @param experiment_labels A numerical vector that indicates the source of each
-#' sample.
-#' @param celltype_labels A matrix that indicates the cell type of each sample.
+#' @param experiment_labels A vector that indicates the source/dataset of
+#' each sample.
+#' @param celltype_labels A character vector or one-hot encoded matrix
+#' (cells x cell type) that indicates the cell type of each sample.
 #' @param genesets Gene sets of interest provided as a list of vectors.
 #' @param bplot default true, beanplot is generated
 #' @param fast_version default value FALSE; a boolean flag indicating whether

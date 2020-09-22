@@ -3,10 +3,12 @@
 
 #' Make cluster names in format 'study_id|cell_type'
 #'
-#' @param study_id character vector containing study ids.
-#' @param cell_type character vector containing cell type names (must be same length as study_id).
+#' @param study_id Character vector containing study ids.
+#' @param cell_type Character vector containing cell type names
+#  (must be same length as study_id).
 #'
-#' @return cluster_name character vector containing cluster names in the format study_id|cell_type.
+#' @return Character vector containing cluster names in the format
+#'  study_id|cell_type.
 #'
 #' @export
 makeClusterName <- function(study_id, cell_type) {
@@ -15,9 +17,10 @@ makeClusterName <- function(study_id, cell_type) {
 
 #' Return study ID from a label in format 'study_id|cell_type'
 #'
-#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
+#' @param cluster_name Character vector containing cluster names in the
+#' format study_id|cell_type.
 #'
-#' @return character vector containing all study ids.
+#' @return Character vector containing all study ids.
 #'
 #' @export
 getStudyId <- function(cluster_name) {
@@ -26,9 +29,10 @@ getStudyId <- function(cluster_name) {
 
 #' Return cell type from a label in format 'study_id|cell_type'
 #'
-#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
+#' @param cluster_name Character vector containing cluster names in the
+#' format study_id|cell_type.
 #'
-#' @return character vector containing all cell type names.
+#' @return Character vector containing all cell type names.
 #'
 #' @export
 getCellType <- function(cluster_name) {
@@ -39,19 +43,21 @@ getCellType <- function(cluster_name) {
 normalize_cols <- function(M, ranked = TRUE) {
   result <- as.matrix(M)
   if (ranked) {
-    result <- matrixStats::colRanks(result, ties.method = "average", preserveShape = TRUE)
+    result <- matrixStats::colRanks(result, ties.method = "average",
+                                    preserveShape = TRUE)
   }
   result <- scale_cols(result)
   dimnames(result) <- dimnames(M)
   return(result)
 }
 
-# This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1))) and is a little faster.
-# The point is that the dot product of vectors scaled this way is the correlation coefficient
-# (which is not true using conventional scaling)
-scale_cols = function(M) {
-    cm = colMeans(M)
-    cnorm = 1 / sqrt(colSums(M**2) - nrow(M) * cm**2)
+# This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1)))
+# and is a little faster.
+# The point is that the dot product of vectors scaled this way is the
+# correlation coefficient (which is not true using conventional scaling)
+scale_cols <- function(M) {
+    cm <- colMeans(M)
+    cnorm <- 1 / sqrt(colSums(M**2) - nrow(M) * cm**2)
     matrixStats::t_tx_OP_y(matrixStats::t_tx_OP_y(M, cm, "-"), cnorm, "*")
 }
 
@@ -102,7 +108,8 @@ compute_1v1_aurocs = function(votes, aurocs) {
 }
 
 # Find best and second best matching clusters
-# CAREFUL: the best match is not necessarily the cluster that had highest one-vs-rest score!
+# CAREFUL: the best match is not necessarily the cluster that had highest
+# one-vs-rest score!
 # We need to consider top 5 candidates and match them up to find best match
 find_top_candidate <- function(votes, aurocs) {
   candidates <- extract_top_candidates(aurocs, 5)
