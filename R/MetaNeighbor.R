@@ -51,7 +51,7 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
     dat <- SummarizedExperiment::assay(dat, i = i)
     
     if (is.vector(celltype_labels)) {
-        celltype_labels <- design_matrix(celltype_labels)
+        celltype_labels <- design_matrix(as.character(celltype_labels))
     }
 
     #check length of experiment_labels equal # of samples
