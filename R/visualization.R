@@ -196,6 +196,7 @@ plotUpset = function(metaclusters, min_recurrence = 2,
 #' @average_expressing_only Whether average expression should be computed based
 #' only on expressing cells (Seurat default) or taking into account zeros.
 #'
+#' @export
 plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
                        normalize_library_size = TRUE, alpha_row = 10,
                        average_expressing_only = TRUE) {
