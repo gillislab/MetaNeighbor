@@ -49,7 +49,7 @@ topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
     } 
     
     pheno <- as.data.frame(cbind(study_id,cell_type), stringsAsFactors = FALSE)
-    pheno$StudyID_CT <- paste(pheno$study_id, pheno$cell_type, sep = "|")
+    pheno$StudyID_CT <- makeClusterName(pheno$study_id, pheno$cell_type)
     
     type_by_study <- table(pheno[,"StudyID_CT"])
     m <- match(rownames(cell_NV), rownames(type_by_study))

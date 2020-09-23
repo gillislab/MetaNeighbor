@@ -12,7 +12,22 @@
 #'
 #' @export
 makeClusterName <- function(study_id, cell_type) {
-  return(paste(study_id, cell_type, sep = "|"))
+  return(paste(standardizeLabel(study_id),
+               standardizeLabel(cell_type),
+               sep = "|"))
+}
+
+#' Remove special characters ("|") from labels to avoid later conflicts
+#'
+#' @param labels Character vector containing study ids or cell type names.
+#' @param replace Special character to replace
+#' @param with Character to use instead of special character
+#'
+#' @return Character vector with replaced special characters.
+#'
+#' @export
+standardizeLabel <- function(labels, replace = "|", with = ".") {
+  return(gsub(replace, with, labels, fixed = TRUE))
 }
 
 #' Return study ID from a label in format 'study_id|cell_type'
