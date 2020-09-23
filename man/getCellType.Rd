@@ -7,10 +7,11 @@
 getCellType(cluster_name)
 }
 \arguments{
-\item{cluster_name}{character vector containing cluster names in the format study_id|cell_type.}
+\item{cluster_name}{Character vector containing cluster names in the
+format study_id|cell_type.}
 }
 \value{
-character vector containing all cell type names.
+Character vector containing all cell type names.
 }
 \description{
 Return cell type from a label in format 'study_id|cell_type'

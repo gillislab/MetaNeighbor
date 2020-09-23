@@ -4,7 +4,13 @@
 \alias{variableGenes}
 \title{Identify a highly variable gene set}
 \usage{
-variableGenes(dat, i = 1, exp_labels)
+variableGenes(
+  dat,
+  i = 1,
+  exp_labels,
+  min_recurrence = length(unique(exp_labels)),
+  downsampling_size = 0
+)
 }
 \arguments{
 \item{dat}{SummarizedExperiment object containing gene-by-sample
