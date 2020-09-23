@@ -221,6 +221,7 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
     centroids <- scale(centroids)
     
     # convert to tidy format
+    `%>%` <- dplyr::`%>%`
     centroids <- centroids %>%
         dplyr::as_tibble(rownames = "cluster") %>%
         tidyr::pivot_longer(cols = -cluster, names_to = "gene",
