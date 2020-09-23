@@ -123,6 +123,7 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
 
 # Compute ROCs according to the default procedure
 score_default <- function(dat_sub, experiment_labels, celltype_labels, node_degree_normalization = TRUE) {
+  experiment_labels <- as.numeric(as.factor(experiment_labels))
   dat_sub     <- stats::cor(dat_sub, method = "s")
   dat_sub     <- as.matrix(dat_sub)
   rank_dat    <- dat_sub
