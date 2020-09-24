@@ -22,7 +22,7 @@
 
 variableGenes <- function(dat, i = 1, exp_labels,
                           min_recurrence = length(unique(exp_labels)),
-                          downsampling_size = 0) {
+                          downsampling_size = 10000) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
     var_genes <- vector("list")
@@ -38,10 +38,13 @@ variableGenes <- function(dat, i = 1, exp_labels,
 
     j <- 1
     for(exp in experiments){
-        data_subset <- Matrix::t(dat[, exp_labels == exp])
-        median_data <- MN_colMedians(data_subset, downsampling_size)
-        variance_data <- MN_colVars(data_subset)
-        names(variance_data) <- colnames(data_subset)
+        keep <- which(exp_labels == exp)
+        if (downsampling_size > 0 & downsampling_size < length(keep)) {
+            keep <- sample(keep, downsampling_size, replace = FALSE)
+        }
+        data_subset <- as.matrix(dat[, keep])
+        median_data <- matrixStats::rowMedians(data_subset)
+        variance_data <- MN_rowVars(data_subset)
         quant_med <- unique(stats::quantile(
             median_data,
             probs = seq(from = 0, to = 1, length = 11),
@@ -70,20 +73,14 @@ variableGenes <- function(dat, i = 1, exp_labels,
     return(result)
 }
 
-MN_colVars <- function(M) {
+MN_rowVars <- function(M) {
     if (is(M, "dgCMatrix")) {
-        result <- (Matrix::colMeans(M**2) - Matrix::colMeans(M)**2)*nrow(M)/(nrow(M)-1)
+        M <- Matrix::t(M)
+        result <- Matrix::colMeans(M**2) - Matrix::colMeans(M)**2
+        result <- result * nrow(M) / (nrow(M)-1)
     } else {
-        result <- matrixStats::colVars(as.matrix(M))
-        names(result) <- colnames(M)
+        result <- matrixStats::rowVars(as.matrix(M))
+        names(result) <- rownames(M)
     }
-    return(result)
-}
-
-MN_colMedians <- function(M, downsampling_size = 0) {
-    if (downsampling_size > 0 & downsampling_size < ncol(M)) {
-        M <- M[, colnames(M) %in% sample(colnames(M), downsampling_size, replace = FALSE)]
-    }
-    result <- matrixStats::colMedians(as.matrix(M))
     return(result)
 }
