@@ -200,6 +200,18 @@ plotUpset = function(metaclusters, min_recurrence = 2,
 plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
                        normalize_library_size = TRUE, alpha_row = 10,
                        average_expressing_only = TRUE) {
+    if (length(experiment_labels)!=ncol(dat)) {
+        stop('experiment_labels length does not match number of samples.')
+    }
+    if (length(celltype_labels)!=ncol(dat)) {
+        stop('celltype_labels length does not match number of samples.')
+    }
+    gene_set <- gene_set[gene_set %in% rownames(dat)]
+    if (length(gene_set)==0) {
+        warning('None of the genes are included in the dataset.')
+        return()
+    }
+
     expr_cols <- rev(colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
     expr <- SummarizedExperiment::assay(dat, i = i)
     if (normalize_library_size) {
@@ -207,7 +219,8 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
     } else {
         normalization_factor <- 1
     }
-    expr <- scale(expr[gene_set,], center = FALSE, scale = normalization_factor)
+    expr <- scale(expr[gene_set,,drop=FALSE], center = FALSE,
+                  scale = normalization_factor)
     
     label_matrix <- design_matrix(makeClusterName(experiment_labels, celltype_labels))
     label_matrix <- scale(label_matrix, center = FALSE, scale = colSums(label_matrix))
