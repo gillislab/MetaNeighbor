@@ -12,6 +12,9 @@
 #'
 #' @export
 makeClusterName <- function(study_id, cell_type) {
+  if (length(study_id) != length(cell_type)) {
+      stop("study_id and cell_type must have identical length!")
+  }
   return(paste(standardizeLabel(study_id),
                standardizeLabel(cell_type),
                sep = "|"))
