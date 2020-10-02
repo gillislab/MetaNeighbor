@@ -20,14 +20,14 @@ data}
 \item{cell_type}{a vector that lists the cell type of each sample}
 }
 \value{
-The output is a gene-by-cluster matrix that contains all the information
-necessary to run MetaNeighborUS from a pre-trained model.
+The output is a gene-by-cluster matrix that contains all the
+information necessary to run MetaNeighborUS from a pre-trained model.
 }
 \description{
-When comparing clusters to a large reference dataset, this function summarizes
-the gene-by-cell matrix into a much smaller highly variable gene-by-cluster matrix
-which can be fed as training data into MetaNeighborUS, resulting in substantial
-time and memory savings.
+When comparing clusters to a large reference dataset, this function
+summarizes the gene-by-cell matrix into a much smaller highly variable
+gene-by-cluster matrix which can be fed as training data into MetaNeighborUS,
+resulting in substantial time and memory savings.
 }
 \examples{
 data(mn_data)

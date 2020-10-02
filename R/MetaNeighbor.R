@@ -19,17 +19,23 @@
 #' expression matrix.
 #' @param i default value 1; non-zero index value of assay containing the matrix
 #' data
-#' @param experiment_labels A numerical vector that indicates the source of each
-#' sample.
-#' @param celltype_labels A matrix that indicates the cell type of each sample.
+#' @param experiment_labels A vector that indicates the source/dataset of
+#' each sample.
+#' @param celltype_labels A character vector or one-hot encoded matrix
+#' (cells x cell type) that indicates the cell type of each sample.
 #' @param genesets Gene sets of interest provided as a list of vectors.
 #' @param bplot default true, beanplot is generated
 #' @param fast_version default value FALSE; a boolean flag indicating whether
 #' to use the fast and low memory version of MetaNeighbor
-#' @param node_degree_normalization default value TRUE; a boolean flag indicating
-#' whether to use normalize votes by dividing through total node degree.
+#' @param node_degree_normalization default value TRUE; a boolean flag
+#' indicating whether to normalize votes by dividing through total node
+#' degree.
+#' @param batch_size Optimization parameter. Gene sets are processed in groups
+#' of size batch_size. The count matrix is first subset to all genes from
+#' these groups, then to each gene set individually.
 #' @return A matrix of AUROC scores representing the mean for each gene set
-#' tested for each celltype is returned directly (see \code{\link{neighborVoting}}).
+#' tested for each celltype is returned directly
+#' (see \code{\link{neighborVoting}}).
 #'
 #' @seealso \code{\link{neighborVoting}}
 #' @examples
@@ -44,10 +50,15 @@
 #' @export
 #'
 
-MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets,
-                        bplot = TRUE, fast_version = FALSE, node_degree_normalization = TRUE) {
+MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels,
+                        genesets, bplot = TRUE, fast_version = FALSE,
+                        node_degree_normalization = TRUE, batch_size = 10) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
+    
+    if (is.vector(celltype_labels)) {
+        celltype_labels <- design_matrix(as.character(celltype_labels))
+    }
 
     #check length of experiment_labels equal # of samples
     if(length(experiment_labels) != length(colnames(dat))){
@@ -78,18 +89,31 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
     rownames(nv_mat)  <- names(genesets)
     colnames(nv_mat)  <- colnames(celltype_labels)
 
-    for(l in seq_along(genesets)){
-        print(names(genesets)[l])
-        geneset     <- genesets[[l]]
-        m           <- match(rownames(dat), geneset)
-        dat_sub     <- dat[!is.na(m),]
-        if (fast_version) {
-          ROCs[[l]] <- score_low_mem(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
-        } else {
-          ROCs[[l]] <- score_default(dat_sub, experiment_labels, celltype_labels, node_degree_normalization)
+    dat <- dat[rownames(dat) %in% unlist(genesets),]
+    for (i in 1:ceiling(length(genesets)/batch_size)) {
+        batch_start <- batch_size*(i-1)+1
+        batch_end <- min(batch_start+batch_size-1, length(genesets))
+        subsets <- genesets[batch_start:batch_end]
+        subdat <- dat[rownames(dat) %in% unlist(subsets),]
+        for(l in names(subsets)){
+            print(l)
+            geneset     <- subsets[[l]]
+            m           <- match(rownames(subdat), geneset)
+            dat_sub     <- subdat[!is.na(m),]
+            if (fast_version) {
+              ROCs[[l]] <- score_low_mem(
+                  dat_sub, experiment_labels, celltype_labels,
+                  node_degree_normalization
+              )
+            } else {
+              ROCs[[l]] <- score_default(
+                  dat_sub, experiment_labels, celltype_labels,
+                  node_degree_normalization
+              )
+            }
         }
     }
-
+    
     for(i in seq_along(ROCs)){
         nv_mat[i,] <- round(rowMeans(ROCs[[i]][[1]], na.rm = TRUE),3)
     }
@@ -109,8 +133,10 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels, genesets
 }
 
 # Compute ROCs according to the default procedure
-score_default <- function(dat_sub, experiment_labels, celltype_labels, node_degree_normalization = TRUE) {
-  dat_sub     <- stats::cor(dat_sub, method = "s")
+score_default <- function(dat_sub, experiment_labels, celltype_labels,
+                          node_degree_normalization = TRUE) {
+  experiment_labels <- as.numeric(as.factor(experiment_labels))
+  dat_sub     <- stats::cor(as.matrix(dat_sub), method = "s")
   dat_sub     <- as.matrix(dat_sub)
   rank_dat    <- dat_sub
   rank_dat[]  <- rank(dat_sub, ties.method = "average", na.last = "keep")
@@ -125,21 +151,22 @@ score_default <- function(dat_sub, experiment_labels, celltype_labels, node_degr
 
 # Compute ROCs using the approximate low memory version
 # For detailed description of vectorized equations, see MetaNeighborUS.R
-score_low_mem <- function(dat_sub, study_id, celltype_labels, node_degree_normalization = TRUE) {
+score_low_mem <- function(dat_sub, study_id, celltype_labels,
+                          node_degree_normalization = TRUE) {
   # remove cells that have zero expressed genes
   nonzero_cells <- Matrix::colSums(dat_sub) > 0
-  dat_sub <- dat_sub[, nonzero_cells]
+  dat_sub <- dat_sub[, nonzero_cells, drop=FALSE]
   study_id <- study_id[nonzero_cells]
-  celltype_labels <- as.matrix(celltype_labels[nonzero_cells,])
+  celltype_labels <- as.matrix(celltype_labels[nonzero_cells,,drop=FALSE])
 
   dat_sub <- normalize_cols(dat_sub)
-
+    
   unique_study_ids <- unique(study_id)
   aurocs <- c()
   for (study in unique_study_ids) {
-    votes <- compute_votes(candidates = dat_sub[, study_id == study],
-                           voters = dat_sub[, study_id != study],
-                           voter_id = celltype_labels[study_id != study,],
+    votes <- compute_votes(candidates = dat_sub[, study_id == study, drop=FALSE],
+                           voters = dat_sub[, study_id != study, drop=FALSE],
+                           voter_id = celltype_labels[study_id != study,, drop=FALSE],
                            node_degree_normalization)
     all_aurocs <- compute_aurocs(
       votes, candidate_id = celltype_labels[study_id == study,, drop = FALSE]
@@ -151,12 +178,14 @@ score_low_mem <- function(dat_sub, study_id, celltype_labels, node_degree_normal
 }
 
 # Compute neighbor voting for a given set of candidates and voters                              
-compute_votes <- function(candidates, voters, voter_id, node_degree_normalization = TRUE) {
+compute_votes <- function(candidates, voters, voter_id,
+                          node_degree_normalization = TRUE) {
     votes <- crossprod(candidates, voters %*% voter_id)
     if (node_degree_normalization) {
       # shift to positive values and normalize node degree
-      votes <- sweep(votes, 2, colSums(voter_id), FUN = "+") /
-           (c(crossprod(candidates, rowSums(voters))) + ncol(voters))
+      votes <- matrixStats::t_tx_OP_y(votes, colSums(voter_id), "+")
+      node_degree <- colSums(candidates*rowSums(voters)) + ncol(voters)
+      votes <- votes / node_degree
     }
     return(votes)
 }

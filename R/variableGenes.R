@@ -8,6 +8,12 @@
 #' @param i default value 1; non-zero index value of assay containing the matrix data
 #' @param exp_labels character vector that denotes the source (Study ID) of
 #' each sample.
+#' @param min_recurrence Number of studies across which a gene must be detected
+#' as highly variable to be kept. By default, only genes that are variable
+#' across all studies are kept (intersection).
+#' @param downsampling_size Downsample each study to downsampling_size
+#' samples without replacement. If set to 0 or value exceeds dataset size,
+#' no downsampling is applied.
 #'
 #' @return The output is a vector of gene names that are highly variable in
 #' every experiment (intersect)
@@ -20,36 +26,37 @@
 #' @export
 #'
 
-variableGenes <- function(dat, i = 1, exp_labels) {
+variableGenes <- function(dat, i = 1, exp_labels,
+                          min_recurrence = length(unique(exp_labels)),
+                          downsampling_size = 10000) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
-    var_genes1 <- vector("list")
+    var_genes <- vector("list")
+    experiments <- unique(exp_labels)
 
     #check length of exp_labels equal # of samples
     if(length(exp_labels) != length(colnames(dat))){
         stop('experiment_labels length does not match number of samples')
     }
-
-    #check obj contains more than 1 unique study_id
-    if(length(unique(exp_labels)) < 2){
-        stop('Found only 1 unique exp_labels. Please use data from more than 1 study!')
+    if (min_recurrence > length(experiments)) {
+        stop('min_recurrence should be smaller or equal to the number of datasets')
     }
 
-
-    experiments <- unique(exp_labels)
     j <- 1
     for(exp in experiments){
-        data_subset   <- as.matrix(dat[ , exp_labels == exp])
-        genes_list    <- vector("list")
+        keep <- which(exp_labels == exp)
+        if (downsampling_size > 0 & downsampling_size < length(keep)) {
+            keep <- sample(keep, downsampling_size, replace = FALSE)
+        }
+        data_subset <- as.matrix(dat[, keep])
         median_data <- matrixStats::rowMedians(data_subset)
-        variance_data <- matrixStats::rowVars(data_subset)
-        names(variance_data) <- rownames(data_subset)
-        quant_med     <- unique(stats::quantile(median_data,
-                                                probs = seq(from = 0,
-                                                            to = 1,
-                                                            length = 11),
-                                                type = 5))
-        genes_list    <- vector("list", length = length(quant_med))
+        variance_data <- MN_rowVars(data_subset)
+        quant_med <- unique(stats::quantile(
+            median_data,
+            probs = seq(from = 0, to = 1, length = 11),
+            type = 5
+        ))
+        genes_list <- vector("list", length = length(quant_med))
 
         for(i in seq_along(quant_med)){
             if(i == 1){
@@ -63,9 +70,23 @@ variableGenes <- function(dat, i = 1, exp_labels) {
             genes_list[[i]] <- names(var_temp)[filt2]
         }
         temp <- length(genes_list)
-        var_genes1[[j]] <- unlist(genes_list[1:temp-1])
+        var_genes[[j]] <- unlist(genes_list[1:temp-1])
         j <- j+1
     }
-    var_genes <- Reduce(intersect, var_genes1)
-    return(var_genes)
+    pooled_genes <- factor(unlist(var_genes))
+    recurrence <- tabulate(pooled_genes)
+    result <- levels(pooled_genes)[recurrence >= min_recurrence]
+    return(result)
+}
+
+MN_rowVars <- function(M) {
+    if (is(M, "dgCMatrix")) {
+        M <- Matrix::t(M)
+        result <- Matrix::colMeans(M**2) - Matrix::colMeans(M)**2
+        result <- result * nrow(M) / (nrow(M)-1)
+    } else {
+        result <- matrixStats::rowVars(as.matrix(M))
+        names(result) <- rownames(M)
+    }
+    return(result)
 }

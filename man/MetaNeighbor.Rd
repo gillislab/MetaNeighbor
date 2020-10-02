@@ -12,7 +12,8 @@ MetaNeighbor(
   genesets,
   bplot = TRUE,
   fast_version = FALSE,
-  node_degree_normalization = TRUE
+  node_degree_normalization = TRUE,
+  batch_size = 10
 )
 }
 \arguments{
@@ -22,10 +23,11 @@ expression matrix.}
 \item{i}{default value 1; non-zero index value of assay containing the matrix
 data}
 
-\item{experiment_labels}{A numerical vector that indicates the source of each
-sample.}
+\item{experiment_labels}{A vector that indicates the source/dataset of
+each sample.}
 
-\item{celltype_labels}{A matrix that indicates the cell type of each sample.}
+\item{celltype_labels}{A character vector or one-hot encoded matrix
+(cells x cell type) that indicates the cell type of each sample.}
 
 \item{genesets}{Gene sets of interest provided as a list of vectors.}
 

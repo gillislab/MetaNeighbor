@@ -1,25 +1,82 @@
 # Contains a collection of utility functions
 #
 
+#' Make cluster names in format 'study_id|cell_type'
+#'
+#' @param study_id Character vector containing study ids.
+#' @param cell_type Character vector containing cell type names
+#  (must be same length as study_id).
+#'
+#' @return Character vector containing cluster names in the format
+#'  study_id|cell_type.
+#'
+#' @export
+makeClusterName <- function(study_id, cell_type) {
+  if (length(study_id) != length(cell_type)) {
+      stop("study_id and cell_type must have identical length!")
+  }
+  return(paste(standardizeLabel(study_id),
+               standardizeLabel(cell_type),
+               sep = "|"))
+}
+
+#' Remove special characters ("|") from labels to avoid later conflicts
+#'
+#' @param labels Character vector containing study ids or cell type names.
+#' @param replace Special character to replace
+#' @param with Character to use instead of special character
+#'
+#' @return Character vector with replaced special characters.
+#'
+#' @export
+standardizeLabel <- function(labels, replace = "|", with = ".") {
+  return(gsub(replace, with, labels, fixed = TRUE))
+}
+
+#' Return study ID from a label in format 'study_id|cell_type'
+#'
+#' @param cluster_name Character vector containing cluster names in the
+#' format study_id|cell_type.
+#'
+#' @return Character vector containing all study ids.
+#'
+#' @export
+getStudyId <- function(cluster_name) {
+  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 1))
+}
+
+#' Return cell type from a label in format 'study_id|cell_type'
+#'
+#' @param cluster_name Character vector containing cluster names in the
+#' format study_id|cell_type.
+#'
+#' @return Character vector containing all cell type names.
+#'
+#' @export
+getCellType <- function(cluster_name) {
+  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 2))
+}
+
 # Scale matrix such that all colums sum to 0 and have l2-norm of 1
 normalize_cols <- function(M, ranked = TRUE) {
   result <- as.matrix(M)
   if (ranked) {
-    result <- matrixStats::colRanks(result, ties.method = "average", preserveShape = TRUE)
+    result <- matrixStats::colRanks(result, ties.method = "average",
+                                    preserveShape = TRUE)
   }
   result <- scale_cols(result)
   dimnames(result) <- dimnames(M)
   return(result)
 }
 
-# This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1))) and is a little faster.
-# The point is that the dot product of vectors scaled this way is the correlation coefficient
-# (which is not true using conventional scaling)
-scale_cols = function(M) {
-    apply(M, 2, function(x) {
-        result = x - mean(x)
-        result = result / sqrt(sum(result**2))
-    })
+# This is not exactly equivalent to scale (by a factor of sqrt(nrow(M-1)))
+# and is a little faster.
+# The point is that the dot product of vectors scaled this way is the
+# correlation coefficient (which is not true using conventional scaling)
+scale_cols <- function(M) {
+    cm <- colMeans(M)
+    cnorm <- 1 / sqrt(colSums(M**2) - nrow(M) * cm**2)
+    matrixStats::t_tx_OP_y(matrixStats::t_tx_OP_y(M, cm, "-"), cnorm, "*")
 }
 
 # Compute AUROCs based on neighbor voting and candidate identities
@@ -60,6 +117,7 @@ design_matrix <- function(cell_type) {
 compute_1v1_aurocs = function(votes, aurocs) {
   result <- matrix(NA, nrow(aurocs), ncol(aurocs), dimnames = dimnames(aurocs))
   for (i in seq_len(ncol(aurocs))) {
+    if (all(is.na(aurocs[,i]))) { next }
     top_candidates <- find_top_candidate(votes[,i], aurocs[,i])
     result[top_candidates$best, i] <- top_candidates$score
     result[top_candidates$second, i] <- 1-top_candidates$score
@@ -68,7 +126,8 @@ compute_1v1_aurocs = function(votes, aurocs) {
 }
 
 # Find best and second best matching clusters
-# CAREFUL: the best match is not necessarily the cluster that had highest one-vs-rest score!
+# CAREFUL: the best match is not necessarily the cluster that had highest
+# one-vs-rest score!
 # We need to consider top 5 candidates and match them up to find best match
 find_top_candidate <- function(votes, aurocs) {
   candidates <- extract_top_candidates(aurocs, 5)
@@ -100,24 +159,3 @@ extract_top_candidates <- function(aurocs, n = 10) {
   return(names(head(sort(aurocs, decreasing=TRUE), n = n)))
 }
 
-#' Return study ID from a label in format 'study_id|cell_type'
-#'
-#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
-#'
-#' @return character vector containing all study ids.
-#'
-#' @export
-getStudyId <- function(cluster_name) {
-  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 1))
-}
-
-#' Return cell type from a label in format 'study_id|cell_type'
-#'
-#' @param cluster_name character vector containing cluster names in the format study_id|cell_type.
-#'
-#' @return character vector containing all cell type names.
-#'
-#' @export
-getCellType <- function(cluster_name) {
-  return(sapply(strsplit(cluster_name, "|", fixed = TRUE), "[", 2))
-}
