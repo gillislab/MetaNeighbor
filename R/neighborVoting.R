@@ -4,7 +4,7 @@
 #' association' using cross validation. Performance is evaluated by calculating
 #' the AUROC for each cell type.
 #'
-#' @param exp_labels numerical vector that indicates the dataset source of
+#' @param exp_labels A vector that indicates the dataset source of
 #' each sample
 #' @param cell_labels sample by cell type matrix that indicates the cell type
 #' of each sample (0-absent; 1-present)
@@ -40,6 +40,10 @@ neighborVoting <- function (exp_labels,
                             means=TRUE,
                             node_degree_normalization=TRUE){
 
+    exp_labels <- as.factor(exp_labels)
+    exp_names <- levels(exp_labels)
+    exp_labels <- as.numeric(exp_labels)
+    
     # cell_labels : needs to be in 1s and 0s
     x1 <- dim(cell_labels)[2]
     x2 <- dim(cell_labels)[1]
@@ -113,12 +117,12 @@ neighborVoting <- function (exp_labels,
     #print("Calculate ROC - rocN")
     rocNV           <- (p/np - (np+1)/2)/nn
     rocNV           <- matrix(rocNV, ncol = length(e), nrow = x1)
-    colnames(rocNV) <- e
+    colnames(rocNV) <- exp_names
     rownames(rocNV) <- colnames(cell_labels)
 
     if(means==TRUE){
-        scores = list(rowMeans(rocNV ,na.rm = TRUE))
+        scores = rowMeans(rocNV ,na.rm = TRUE)
     } else {
-        scores = list(rocNV)
+        scores = rocNV
     }
 }
