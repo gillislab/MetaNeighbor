@@ -9,7 +9,7 @@ variableGenes(
   i = 1,
   exp_labels,
   min_recurrence = length(unique(exp_labels)),
-  downsampling_size = 0
+  downsampling_size = 10000
 )
 }
 \arguments{
@@ -20,6 +20,14 @@ expression matrix.}
 
 \item{exp_labels}{character vector that denotes the source (Study ID) of
 each sample.}
+
+\item{min_recurrence}{Number of studies across which a gene must be detected
+as highly variable to be kept. By default, only genes that are variable
+across all studies are kept (intersection).}
+
+\item{downsampling_size}{Downsample each study to downsampling_size
+samples without replacement. If set to 0 or value exceeds dataset size,
+no downsampling is applied.}
 }
 \value{
 The output is a vector of gene names that are highly variable in

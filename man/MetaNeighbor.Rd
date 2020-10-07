@@ -13,7 +13,8 @@ MetaNeighbor(
   bplot = TRUE,
   fast_version = FALSE,
   node_degree_normalization = TRUE,
-  batch_size = 10
+  batch_size = 10,
+  detailed_results = FALSE
 )
 }
 \arguments{
@@ -36,12 +37,24 @@ each sample.}
 \item{fast_version}{default value FALSE; a boolean flag indicating whether
 to use the fast and low memory version of MetaNeighbor}
 
-\item{node_degree_normalization}{default value TRUE; a boolean flag indicating
-whether to use normalize votes by dividing through total node degree.}
+\item{node_degree_normalization}{default value TRUE; a boolean flag
+indicating whether to normalize votes by dividing through total node
+degree.}
+
+\item{batch_size}{Optimization parameter. Gene sets are processed in groups
+of size batch_size. The count matrix is first subset to all genes from
+these groups, then to each gene set individually.}
+
+\item{detailed_results}{Should the function return the average AUROC across
+all test datasets (default) or a detailed table with the AUROC for each
+test dataset?}
 }
 \value{
 A matrix of AUROC scores representing the mean for each gene set
-tested for each celltype is returned directly (see \code{\link{neighborVoting}}).
+tested for each celltype is returned directly
+(see \code{\link{neighborVoting}}). If detailed_results is set to TRUE,
+the function returns a table of AUROC scores in each test dataset for each
+gene set.
 }
 \description{
 For each gene set of interest, the function builds a network of rank

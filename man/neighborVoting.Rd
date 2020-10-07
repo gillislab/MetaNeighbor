@@ -13,7 +13,7 @@ neighborVoting(
 )
 }
 \arguments{
-\item{exp_labels}{numerical vector that indicates the dataset source of
+\item{exp_labels}{A vector that indicates the dataset source of
 each sample}
 
 \item{cell_labels}{sample by cell type matrix that indicates the cell type
