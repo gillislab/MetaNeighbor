@@ -100,12 +100,12 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels,
         batch_start <- batch_size*(i-1)+1
         batch_end <- min(batch_start+batch_size-1, length(genesets))
         subsets <- genesets[batch_start:batch_end]
-        subdat <- dat[rownames(dat) %in% unlist(subsets),]
+        subdat <- dat[rownames(dat) %in% unlist(subsets),, drop=FALSE]
         for(l in names(subsets)){
             print(l)
             geneset     <- subsets[[l]]
             m           <- match(rownames(subdat), geneset)
-            dat_sub     <- subdat[!is.na(m),]
+            dat_sub     <- subdat[!is.na(m),, drop=FALSE]
             if (fast_version) {
               ROCs[[l]] <- score_low_mem(
                   dat_sub, experiment_labels, celltype_labels,
