@@ -1,4 +1,4 @@
-1.10.0
+1.9.1
     - Add several parameters to control fast version of MetaNeighbor and MetaNeighborUS
     - Add function to pre-train MetaNeighbor models.
     - Add preprocessing function to merge SingleCellExperiment objects.
