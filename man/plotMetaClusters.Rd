@@ -20,6 +20,9 @@ plotMetaClusters(
 
 \item{best_hits}{Matrix of AUROCs used to extract meta-clusters.}
 
+\item{reorder}{Reorder datasets by similarity for each badge? By default,
+the same dataset ordering is used for each badge.}
+
 \item{cex}{Size factor controling label size.}
 
 \item{study_cols}{Named vector where values are RGB colors and names are

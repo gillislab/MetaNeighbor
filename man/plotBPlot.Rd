@@ -10,11 +10,11 @@ plotBPlot(nv_mat, hvg_score = NULL, cex = 1)
 \item{nv_mat}{A rectangular AUROC matrix as returned by MetaNeighbor,
 where each row is a gene set and each column is a cell type.}
 
-\item{cex}{Size factor for row and column labels.}
-
-\item{hvg}{Named vector with AUROCs obtained from a set of Highly Variable
-Genes (HVGs). The names must correspond to cell types from nv_mat.
+\item{hvg_score}{Named vector with AUROCs obtained from a set of Highly
+Variable Genes (HVGs). The names must correspond to cell types from nv_mat.
 If specified, the HVG score is  highlighted in red.}
+
+\item{cex}{Size factor for row and column labels.}
 }
 \description{
 Plot Bean Plot, showing how replicability of cell types depends on gene sets.

@@ -15,12 +15,11 @@ Depends: R(>= 3.5)
 Imports: 
     beanplot (>= 1.2),
     gplots (>= 3.0.1),
-    RColorBrewer (>= 1.2),
+    RColorBrewer (>= 1.1.2),
     stats (>= 3.4),
     Matrix (>= 1.2),
     matrixStats (>= 0.54),
     SummarizedExperiment (>= 1.12),
-    utils (>= 3.4),
     SingleCellExperiment,
     igraph,
     dplyr,

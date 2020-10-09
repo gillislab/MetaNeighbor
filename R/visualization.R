@@ -96,8 +96,8 @@ order_rows_according_to_cols = function(M, alpha = 1) {
 #'
 #' @param nv_mat A rectangular AUROC matrix as returned by MetaNeighbor,
 #' where each row is a gene set and each column is a cell type.
-#' @param hvg Named vector with AUROCs obtained from a set of Highly Variable
-#' Genes (HVGs). The names must correspond to cell types from nv_mat.
+#' @param hvg_score Named vector with AUROCs obtained from a set of Highly
+#' Variable Genes (HVGs). The names must correspond to cell types from nv_mat.
 #' If specified, the HVG score is  highlighted in red.
 #' @param cex Size factor for row and column labels.
 #'
@@ -193,8 +193,8 @@ plotUpset = function(metaclusters, min_recurrence = 2,
 #' already normalized).
 #' @param alpha_row Parameter controling row ordering: a higher value of
 #' alpha_row gives more weight to extreme AUROC values (close to 1).
-#' @average_expressing_only Whether average expression should be computed based
-#' only on expressing cells (Seurat default) or taking into account zeros.
+#' @param average_expressing_only Whether average expression should be computed
+#' based only on expressing cells (Seurat default) or taking into account zeros.
 #'
 #' @export
 plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
