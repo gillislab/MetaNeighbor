@@ -104,7 +104,7 @@ scoreMetaClusters <- function(meta_clusters, best_hits,
 plotMetaClusters <- function(
     meta_clusters, best_hits, reorder=FALSE, cex = 1, study_cols = NULL,
     auroc_breaks = c(0, 0.5, 0.7, 0.9, 0.95, 0.99, 1),
-    auroc_cols = colorRampPalette(c("white", "blue"))(length(auroc_breaks)-1)
+    auroc_cols = grDevices::colorRampPalette(c("white", "blue"))(length(auroc_breaks)-1)
 ) {
   if (length(meta_clusters) == 0) { return(list()); }
 
@@ -121,7 +121,7 @@ plotMetaClusters <- function(
     comp_cols <- study_cols[getStudyId(rownames(dat))]
     comp_cell_types <- getCellType(rownames(dat))
     if (reorder) {
-      new_order <- as.dendrogram(order_sym_matrix(dat))
+      new_order <- stats::as.dendrogram(order_sym_matrix(dat))
     } else {
       new_order <- FALSE
     }
@@ -134,15 +134,16 @@ plotMetaClusters <- function(
       RowSideColors = rev(comp_cols), ColSideColors = comp_cols,
       revC = TRUE, main = names(meta_clusters)[i]
     )
-    par(lend = 1)
-    legend("topright", inset = c(0, 0),
-           legend = names(study_cols),
-           col = study_cols, pt.cex = 1, cex = 1, lwd = 10, bty="n")
+    graphics::par(lend = 1)
+    graphics::legend(
+      "topright", inset = c(0, 0), legend = names(study_cols),
+      col = study_cols, pt.cex = 1, cex = 1, lwd = 10, bty="n"
+    )
   }
 }
 
 # Emulate default ggplot colors
 gg_color <- function(n) {
   hues <- seq(15, 375, length = n + 1)
-  hcl(h = hues, l = 65, c = 100)[1:n]
+  grDevices::hcl(h = hues, l = 65, c = 100)[1:n]
 }

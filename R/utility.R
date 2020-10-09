@@ -104,7 +104,7 @@ compute_aurocs <- function(votes, candidate_id = NULL) {
 design_matrix <- function(cell_type) {
   cell_type <- as.factor(cell_type)
   if (length(levels(cell_type)) > 1) {
-    result <- model.matrix(~cell_type-1)
+    result <- stats::model.matrix(~cell_type-1)
   } else {
     result <- matrix(1, nrow = length(cell_type), ncol = 1)
   }
@@ -156,6 +156,6 @@ find_top_candidate <- function(votes, aurocs) {
 }
 
 extract_top_candidates <- function(aurocs, n = 10) {
-  return(names(head(sort(aurocs, decreasing=TRUE), n = n)))
+  return(names(utils::head(sort(aurocs, decreasing=TRUE), n = n)))
 }
 

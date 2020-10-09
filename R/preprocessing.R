@@ -18,7 +18,9 @@ mergeSCE <- function(sce_list) {
     # gather expression data
     common_assays <- Reduce(
         intersect,
-        lapply(sce_list, function(sce) { names(assays(sce)) })
+        lapply(sce_list, function(sce) {
+            names(SummarizedExperiment::assays(sce))
+        })
     )
     common_genes <- Reduce(intersect, lapply(sce_list, rownames))
     new_assays <- lapply(common_assays, aggregate_assay, sce_list, common_genes)
@@ -27,10 +29,12 @@ mergeSCE <- function(sce_list) {
     # gather common coldata
     common_coldata <- Reduce(
         intersect,
-        lapply(sce_list, function(sce) { names(colData(sce)) })
+        lapply(sce_list, function(sce) {
+            names(SingleCellExperiment::colData(sce))
+        })
     )
     new_coldata <- lapply(sce_list, function(sce) {
-        colData(sce)[, common_coldata, drop=FALSE]
+        SingleCellExperiment::colData(sce)[, common_coldata, drop=FALSE]
     })
     new_coldata <- do.call(rbind, new_coldata)
     gc()
@@ -45,7 +49,7 @@ mergeSCE <- function(sce_list) {
 # Concatenate count matrices from multiple SingleCellExperiment objects.
 aggregate_assay <- function(assay_name, sce_list, common_genes) {
     result <- lapply(sce_list, function(sce) {
-        assays(sce)[[assay_name]][common_genes,]
+        SummarizedExperiment::assays(sce)[[assay_name]][common_genes,]
     })
     gc()
     result <- do.call(cbind, result)

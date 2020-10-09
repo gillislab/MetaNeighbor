@@ -80,7 +80,7 @@ variableGenes <- function(dat, i = 1, exp_labels,
 }
 
 MN_rowVars <- function(M) {
-    if (is(M, "dgCMatrix")) {
+    if (methods::is(M, "dgCMatrix")) {
         M <- Matrix::t(M)
         result <- Matrix::colMeans(M**2) - Matrix::colMeans(M)**2
         result <- result * nrow(M) / (nrow(M)-1)

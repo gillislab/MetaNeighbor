@@ -65,8 +65,10 @@ plotClusterGraph <- function(graph, study_id=NULL, cell_type=NULL,
          edge.width = igraph::E(graph)$width * size_factor,
          edge.arrow.size=.1*size_factor,
          edge.arrow.width=0.5*size_factor)
-    legend("topright", legend = names(vertex_colors), pt.bg = vertex_colors,
-           pt.cex = legend_cex, cex = 0.5*legend_cex, bty="n", pch=21)
+    graphics::legend(
+        "topright", legend = names(vertex_colors), pt.bg = vertex_colors,
+        pt.cex = legend_cex, cex = 0.5*legend_cex, bty="n", pch=21
+    )
 }
 
 # Set node color (dataset) and size (# cells), edge color and size (AUROC)

@@ -20,8 +20,8 @@
 splitClusters <- function(mn_scores, k) {
     is_na <- apply(mn_scores, 2, function(x) { all(is.na(x)) })
     mn_scores <- mn_scores[!is_na, !is_na]
-    mn_hclust <- hclust(as.dist(1-mn_scores), method = "average")
-    result <- cutree(mn_hclust, k=k)
+    mn_hclust <- stats::hclust(stats::as.dist(1-mn_scores), method = "average")
+    result <- stats::cutree(mn_hclust, k=k)
     result <- split(names(result), result)
     return(result)
 }
@@ -49,8 +49,8 @@ splitTrainClusters <- function(mn_scores, k) {
     row_is_na <- apply(mn_scores, 1, function(x) { all(is.na(x)) })
     col_is_na <- apply(mn_scores, 2, function(x) { all(is.na(x)) })
     mn_scores <- mn_scores[!row_is_na, !col_is_na]
-    mn_hclust <- hclust(dist(t(mn_scores)), method = "average")
-    result <- cutree(mn_hclust, k=k)
+    mn_hclust <- stats::hclust(stats::dist(t(mn_scores)), method = "average")
+    result <- stats::cutree(mn_hclust, k=k)
     result <- split(names(result), result)
     return(result)
 }

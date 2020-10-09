@@ -16,7 +16,7 @@
 #' @export
 #'
 plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8)) {
-    auroc_cols <- rev(colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
+    auroc_cols <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
     breaks <- seq(0, 1, length=101)
     ordering <- order_sym_matrix(aurocs)
     
@@ -26,7 +26,7 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8)) {
         offsetRow=0.1, offsetCol=0.1,
         trace = "none", density.info = "none",
         Rowv = ordering, Colv = ordering, 
-        col = auroc_cols, breaks = breaks, na.color = gray(0.95),
+        col = auroc_cols, breaks = breaks, na.color = grDevices::gray(0.95),
         cexRow = cex, cexCol = cex
     )
 }
@@ -34,7 +34,9 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8)) {
 order_sym_matrix <- function(M, na_value = 0) {
     M <- (M + t(M))/2
     M[is.na(M)] <- na_value
-    result <- as.dendrogram(hclust(as.dist(1-M), method = "average"))
+    result <- stats::as.dendrogram(
+        stats::hclust(stats::as.dist(1-M), method = "average")
+    )
     return(result)
 }
 
@@ -67,11 +69,13 @@ order_sym_matrix <- function(M, na_value = 0) {
 #'
 plotHeatmapPretrained <- function(aurocs, alpha_col = 1, alpha_row = 10,
                                   cex = 1, margins = c(8,8)) {
-    auroc_cols <- rev(colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
+    auroc_cols <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
     breaks <- seq(0, 1, length=101)
     auroc_no_na <- aurocs
     auroc_no_na[is.na(aurocs)] <- 0
-    col_order <- as.dendrogram(hclust(dist(t(auroc_no_na)**alpha_col), method = "average"))
+    col_order <- stats::as.dendrogram(
+        stats::hclust(stats::dist(t(auroc_no_na)**alpha_col), method = "average")
+    )
     row_order <- order_rows_according_to_cols(auroc_no_na[, labels(col_order)], alpha_row)
     aurocs <- aurocs[row_order,]
 
@@ -80,7 +84,7 @@ plotHeatmapPretrained <- function(aurocs, alpha_col = 1, alpha_row = 10,
         key = TRUE, keysize = 1, key.xlab="AUROC", key.title="NULL",
         offsetRow=0.1, offsetCol=0.1,
         trace = "none", density.info = "none", dendrogram = "col",
-        col = auroc_cols, breaks = breaks, na.color = gray(0.95),
+        col = auroc_cols, breaks = breaks, na.color = grDevices::gray(0.95),
         Rowv = FALSE, Colv = col_order, 
         cexRow = cex, cexCol = cex
     )
@@ -122,7 +126,7 @@ plotBPlot <- function(nv_mat, hvg_score=NULL, cex=1) {
     what=c(0,1,1,1), frame.plot = FALSE, las = 2, cex.axis = cex
   )
   if (!is.null(hvg_score)) {
-    points(hvg_score ~ factor(names(hvg_score)), pch=17, col="red")
+    graphics::points(hvg_score ~ factor(names(hvg_score)), pch=17, col="red")
   }
 }
 
@@ -212,7 +216,7 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
         return()
     }
 
-    expr_cols <- rev(colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
+    expr_cols <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
     expr <- SummarizedExperiment::assay(dat, i = i)
     if (normalize_library_size) {
         normalization_factor <- Matrix::colSums(expr) / 1000000
@@ -252,7 +256,8 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
                          percent_expressing = mean(percent_expressing))
     summary_matrix <- summary %>%
         dplyr::select(gene, cell_type, average_expression) %>%
-        tidyr::pivot_wider(id_cols = everything(), names_from = "cell_type",
+        tidyr::pivot_wider(id_cols = dplyr::everything(),
+                           names_from = "cell_type",
                            values_from = "average_expression") %>%
         tibble::column_to_rownames("gene") %>%
         as.matrix()

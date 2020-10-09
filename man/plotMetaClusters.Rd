@@ -12,7 +12,8 @@ plotMetaClusters(
   cex = 1,
   study_cols = NULL,
   auroc_breaks = c(0, 0.5, 0.7, 0.9, 0.95, 0.99, 1),
-  auroc_cols = colorRampPalette(c("white", "blue"))(length(auroc_breaks) - 1)
+  auroc_cols = (grDevices::colorRampPalette(c("white", "blue")))(length(auroc_breaks) -
+    1)
 )
 }
 \arguments{

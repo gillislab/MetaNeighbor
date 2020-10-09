@@ -125,8 +125,8 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels,
     }
 
     if(bplot){
-        Celltype = rep(colnames(nv_mat),each=dim(nv_mat)[1])
-        ROCValues = unlist(lapply(seq_len(dim(nv_mat)[2]), function(i) nv_mat[,i]))
+        Celltype <- rep(colnames(nv_mat),each=dim(nv_mat)[1])
+        ROCValues <- unlist(lapply(seq_len(dim(nv_mat)[2]), function(i) nv_mat[,i]))
         beanplot::beanplot(ROCValues ~ Celltype,
                            border="NA",
                            col="gray",
@@ -136,15 +136,15 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels,
     }
 
     if (detailed_results) {
-        result = lapply(ROCs, function(aurocs) {
-            aurocs %>%
-                tibble::as_tibble(rownames = "cell_type") %>%
-                tidyr::pivot_longer(cols = -cell_type,
-                                    names_to = "test_dataset",
-                                    values_to = "auroc",
-                                    values_drop_na = TRUE)
+        result <- lapply(ROCs, function(aurocs) {
+            aurocs <- tibble::as_tibble(aurocs, rownames = "cell_type")
+            tidyr::pivot_longer(aurocs,
+                                cols = -cell_type,
+                                names_to = "test_dataset",
+                                values_to = "auroc",
+                                values_drop_na = TRUE)
         })
-        result = dplyr::bind_rows(result, .id = "gene_set")
+        result <- dplyr::bind_rows(result, .id = "gene_set")
         return(result)
     } else {
         return(nv_mat)
