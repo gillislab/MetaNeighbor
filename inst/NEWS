@@ -1,1 +1,10 @@
-Nothing right now. Stay tuned!
+1.10.0
+    - Add several parameters to control fast version of MetaNeighbor and MetaNeighborUS
+    - Add function to pre-train MetaNeighbor models.
+    - Add preprocessing function to merge SingleCellExperiment objects.
+    - Add utility functions related to meta-clusters, cluster graphs and visualization.
+1.3.0 
+    - Added memory efficient version of MetaNeighbor and MetaNeighborUS
+    - Added supporting functions for memory efficient versions
+1.2.0 No updates!
+1.1.0 Updated topHits to evaluate with tied ROC values

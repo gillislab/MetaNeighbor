@@ -1,25 +1,26 @@
 Package: MetaNeighbor
 Type: Package
 Title: Single cell replicability analysis
-Version: 0.101.0
+Version: 1.10.0
 Authors@R: c(person("Megan", "Crow", email = "mcrow@cshl.edu",role = c("aut", "cre")),
     person("Sara", "Ballouz", email = "sballouz@cshl.edu",role = c("ctb")),
     person("Manthan", "Shah", email = "shah@cshl.edu",role = c("ctb")),
+    person("Stephan", "Fischer", email = "fischer@cshl.edu",role = c("ctb")),
     person("Jesse", "Gillis", email = "JGillis@cshl.edu",role = c("aut")))
-Description: MetaNeighbor allows users to quantify cell type replicability across
+Description: MetaNeighbor allows users to quantify cell type replicability across 
     datasets using neighbor voting.
-biocViews: GeneExpression, GO, MultipleComparison, SingleCell, Transcriptomics
+biocViews: ImmunoOncology, GeneExpression, GO, MultipleComparison, SingleCell, Transcriptomics
 License: MIT + file LICENSE
-Depends: R(>= 3.0)
+Depends: R(>= 3.5)
 Imports: 
     beanplot (>= 1.2),
-    gplots (>= 3.0),
-    RColorBrewer (>= 1.1),
-    stats (>= 3.0),
+    gplots (>= 3.0.1),
+    RColorBrewer (>= 1.2),
+    stats (>= 3.4),
     Matrix (>= 1.2),
-    matrixStats (>= 0.53.1),
-    SummarizedExperiment (>= 1.6.5),
-    utils (>= 3.0),
+    matrixStats (>= 0.54),
+    SummarizedExperiment (>= 1.12),
+    utils (>= 3.4),
     SingleCellExperiment,
     igraph,
     dplyr,
@@ -34,4 +35,4 @@ Suggests:
 LazyData: true
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
-Maintainer: Manthan Shah <shah@cshl.edu>
+Maintainer: Stephan Fischer <fischer@cshl.edu>
