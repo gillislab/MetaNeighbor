@@ -25,5 +25,7 @@ if (!requireNamespace("devtools", quietly = TRUE))
 devtools::install_github("gillislab/MetaNeighbor")
 ```
 
+Installation usually completes in 1 or 2 minutes, but can take up to 20 minutes if you are starting with an empty R distribution.
+
 ## MetaNeighbor demos
 To run a demo of MetaNeighbor, we recommend running the [vignette](./vignettes/MetaNeighbor.Rmd) used for the [documentation](./Documentation.md) or try one of our [protocols](https://github.com/gillislab/MetaNeighbor-Protocol).
