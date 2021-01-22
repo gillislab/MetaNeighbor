@@ -31,7 +31,6 @@ variableGenes <- function(dat, i = 1, exp_labels,
                           downsampling_size = 10000) {
 
     dat <- SummarizedExperiment::assay(dat, i = i)
-    var_genes <- vector("list")
     experiments <- unique(exp_labels)
 
     #check length of exp_labels equal # of samples
@@ -42,40 +41,46 @@ variableGenes <- function(dat, i = 1, exp_labels,
         stop('min_recurrence should be smaller or equal to the number of datasets')
     }
 
-    j <- 1
+    gene_stats <- list()
     for(exp in experiments){
         keep <- which(exp_labels == exp)
         if (downsampling_size > 0 & downsampling_size < length(keep)) {
             keep <- sample(keep, downsampling_size, replace = FALSE)
         }
-        data_subset <- as.matrix(dat[, keep])
-        median_data <- matrixStats::rowMedians(data_subset)
-        variance_data <- MN_rowVars(data_subset)
-        quant_med <- unique(stats::quantile(
-            median_data,
-            probs = seq(from = 0, to = 1, length = 11),
-            type = 5
-        ))
-        genes_list <- vector("list", length = length(quant_med))
-
-        for(i in seq_along(quant_med)){
-            if(i == 1){
-                filt1     <- median_data <= quant_med[i]
-            } else {
-                filt1     <- median_data <= quant_med[i] & median_data > quant_med[i-1]
-            }
-            var_temp  <- variance_data[filt1]
-            quant_var <- stats::quantile(var_temp, na.rm = TRUE)
-            filt2     <- var_temp > quant_var[4]
-            genes_list[[i]] <- names(var_temp)[filt2]
-        }
-        temp <- length(genes_list)
-        var_genes[[j]] <- unlist(genes_list[1:temp-1])
-        j <- j+1
+        gene_stats[[exp]] <- variable_genes_single_exp(dat[, keep])
     }
-    pooled_genes <- factor(unlist(var_genes))
-    recurrence <- tabulate(pooled_genes)
-    result <- levels(pooled_genes)[recurrence >= min_recurrence]
+    gene_stats <- dplyr::bind_rows(gene_stats, .id = "study_id")
+    `%>%` <- dplyr::`%>%`
+    gene_stats <- gene_stats %>%
+        dplyr::group_by(gene) %>%
+        dplyr::summarize(recurrence = sum(is_hvg),
+                         score = mean(var_quant)) %>%
+        dplyr::filter(recurrence >= min_recurrence) %>%
+        dplyr::arrange(desc(recurrence), desc(score))
+    result <- dplyr::pull(gene_stats, gene)
+    return(result)
+}
+
+variable_genes_single_exp = function(data_subset) {
+    data_subset <- as.matrix(data_subset)
+    variance_data <- MN_rowVars(data_subset)
+    median_data <- matrixStats::rowMedians(data_subset)
+    quant_med <- unique(stats::quantile(
+        median_data, probs = seq(0, 1, length = 11), type = 5
+    ))
+    
+    # assign genes to 5 quantile bins based on median expression
+    # remove bin with high expressing genes
+    `%>%` <- dplyr::`%>%`
+    result <- data.frame(gene = names(variance_data),
+                         variance = variance_data,
+                         bin_med = cut(median_data, c(-1,quant_med))) %>%
+        dplyr::filter(bin_med != levels(bin_med)[length(levels(bin_med))]) %>%
+        dplyr::group_by(bin_med) %>%
+        dplyr::mutate(var_quant = (rank(variance)-1) / (length(variance)-1)) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-variance, -bin_med) %>%
+        dplyr::mutate(is_hvg = var_quant > 0.75)
     return(result)
 }
 
