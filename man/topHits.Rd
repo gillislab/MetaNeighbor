@@ -28,7 +28,10 @@ matches, and/or those with AUROC values greater than or equal to threshold
 value
 }
 \description{
-Identifies reciprocal top hits and high scoring cell type pairs
+Identifies reciprocal top hits and high scoring cell type pairs. This
+function only look for the overall top hit for each cell type. We strongly
+recommend using topHitsByStudy instead, which looks for top hits in each
+target study, providing a more comprehensive view of replicability.
 }
 \examples{
 data(mn_data)
@@ -44,4 +47,7 @@ top_hits = topHits(cell_NV = celltype_NV,
                    threshold = 0.9)
 top_hits
 
+}
+\seealso{
+\code{\link{topHitsByStudy}}
 }
