@@ -220,34 +220,16 @@ predict_and_score <- function(dat, study_id, cell_type,
                               cluster_centroids, n_cells_per_cluster,
                               node_degree_normalization = TRUE, one_vs_best = FALSE) {
   colnames(dat) <- makeClusterName(study_id, cell_type)
+  votes <- crossprod(dat, cluster_centroids)
   if (node_degree_normalization) {
-    centroid_study_label <- getStudyId(colnames(cluster_centroids))
-    study_matrix <- design_matrix(centroid_study_label)
-    study_centroids <- cluster_centroids %*% study_matrix
-    n_cells_per_study <- n_cells_per_cluster %*% study_matrix
-    train_study_id <- colnames(study_matrix)
+    votes <- normalize_node_degree(votes, dat, cluster_centroids, n_cells_per_cluster)
   }
-
   result <- c()
   for (test_study in unique(study_id)) {
-    is_test <- study_id == test_study
-    test_dat <- dat[, is_test]
-    votes <- crossprod(test_dat, cluster_centroids)
-
-    if (node_degree_normalization) {
-      # shift to positive values and normalize node degree
-      votes <- sweep(votes, 2, n_cells_per_cluster, "+")
-      node_degree <- crossprod(test_dat, study_centroids)
-      node_degree <- sweep(node_degree, 2, n_cells_per_study, "+")
-      for (train_study in unique(train_study_id)) {
-        is_train <- centroid_study_label == train_study
-        votes[, is_train] <- votes[, is_train] / node_degree[, train_study]
-      }
-    }
-      
-    aurocs <- compute_aurocs(votes, design_matrix(rownames(votes)))
+    study_votes <- votes[study_id == test_study,]
+    aurocs <- compute_aurocs(study_votes, design_matrix(rownames(study_votes)))
     if (one_vs_best) {
-      result <- rbind(result, compute_1v1_aurocs(votes, aurocs))
+      result <- rbind(result, compute_1v1_aurocs(study_votes, aurocs))
     } else {
       result <- rbind(result, aurocs)
     }
@@ -255,6 +237,26 @@ predict_and_score <- function(dat, study_id, cell_type,
   return(result)
 }
 
+normalize_node_degree <- function(votes, dat, cluster_centroids, n_cells_per_cluster) {
+    # node degree is normalized by train study -> compute study centroids
+    centroid_study_label <- getStudyId(colnames(cluster_centroids))
+    study_matrix <- design_matrix(centroid_study_label)
+    study_centroids <- cluster_centroids %*% study_matrix
+    n_cells_per_study <- n_cells_per_cluster %*% study_matrix
+    train_study_id <- colnames(study_matrix)
+    
+    node_degree <- crossprod(dat, study_centroids)
+    
+    # shift to positive values and normalize node degree
+    result <- sweep(votes, 2, n_cells_per_cluster, "+")
+    node_degree <- sweep(node_degree, 2, n_cells_per_study, "+")
+    for (train_study in unique(train_study_id)) {
+      is_train <- centroid_study_label == train_study
+      result[, is_train] <- result[, is_train] / node_degree[, train_study]
+    }
+  return(result)
+}
+                    
 MetaNeighborUS_from_trained <- function(trained_model, test_dat, study_id, cell_type,
                                         node_degree_normalization = TRUE, one_vs_best = FALSE) {
   dat <- normalize_cols(test_dat)
