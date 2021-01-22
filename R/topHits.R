@@ -150,7 +150,7 @@ topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
 #'
 topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplicates = TRUE) {
     `%>%` <- dplyr::`%>%`
-    result = tibble::as_tibble(auroc, rownames = "ref_cell_type") %>%
+    result <- tibble::as_tibble(auroc, rownames = "ref_cell_type") %>%
         tidyr::pivot_longer(cols = -ref_cell_type,
                             names_to = "target_cell_type",
                             values_to = "auroc") %>%
@@ -165,7 +165,7 @@ topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplica
         dplyr::filter(auroc >= threshold)
     
     if (collapse_duplicates) {
-        result = result %>%
+        result <- result %>%
             dplyr::group_by(ref_cell_type, target_cell_type) %>%
             dplyr::mutate(pair_id = paste(sort(c(ref_cell_type, target_cell_type)),
                                           collapse = "")) %>%
@@ -179,7 +179,7 @@ topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplica
     }
     
     # final formatting
-    result = result %>%
+    result <- result %>%
         dplyr::arrange(desc(auroc)) %>%
         dplyr::mutate(auroc = round(auroc, n_digits)) %>%    
         dplyr::mutate(Match_type = ifelse(is_reciprocal,
@@ -194,17 +194,17 @@ topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplica
 
 is_reciprocal_top_hit = function(best_hits) {
     `%>%` <- dplyr::`%>%`
-    best_hits = best_hits %>%
+    best_hits <- best_hits %>%
         dplyr::select(-auroc)
-    reverse_hits = best_hits %>%
+    reverse_hits <- best_hits %>%
         dplyr::select(target_cell_type = ref_cell_type,
                       reciprocal_cell_type = target_cell_type)
-    reciprocal_best_hits = dplyr::inner_join(best_hits, reverse_hits,
-                                             by = "target_cell_type") %>%
+    reciprocal_best_hits <- dplyr::inner_join(best_hits, reverse_hits,
+                                              by = "target_cell_type") %>%
         dplyr::filter(ref_cell_type == reciprocal_cell_type) %>%
         dplyr::select(-reciprocal_cell_type) %>%
         tibble::add_column(is_reciprocal = TRUE)
-    result = dplyr::left_join(best_hits, reciprocal_best_hits,
+    result <- dplyr::left_join(best_hits, reciprocal_best_hits,
                               by = c("ref_cell_type", "target_cell_type")) %>%
         tidyr::replace_na(replace = list(is_reciprocal = FALSE)) %>%
         dplyr::pull(is_reciprocal)
