@@ -20,7 +20,7 @@
 splitClusters <- function(mn_scores, k) {
     is_na <- apply(mn_scores, 2, function(x) { all(is.na(x)) })
     mn_scores <- mn_scores[!is_na, !is_na]
-    mn_hclust <- stats::hclust(stats::as.dist(1-mn_scores), method = "average")
+    mn_hclust <- order_sym_matrix(mn_scores)
     result <- stats::cutree(mn_hclust, k=k)
     result <- split(names(result), result)
     return(result)

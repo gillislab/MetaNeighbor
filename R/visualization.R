@@ -15,12 +15,12 @@
 #'
 #' @export
 #'
-plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8)) {
+plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
     auroc_cols <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
     breaks <- seq(0, 1, length=101)
-    ordering <- order_sym_matrix(aurocs)
+    ordering <- stats::as.dendrogram(order_sym_matrix(aurocs))
     
-    gplots::heatmap.2(
+    arg_list = list(
         x = aurocs, margins = margins,
         key = TRUE, keysize = 1, key.xlab="AUROC", key.title="NULL",
         offsetRow=0.1, offsetCol=0.1,
@@ -29,14 +29,15 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8)) {
         col = auroc_cols, breaks = breaks, na.color = grDevices::gray(0.95),
         cexRow = cex, cexCol = cex
     )
+    additional_args = list(...)
+    arg_list[names(additional_args)] = additional_args
+    do.call(gplots::heatmap.2, arg_list)
 }
 
 order_sym_matrix <- function(M, na_value = 0) {
     M <- (M + t(M))/2
     M[is.na(M)] <- na_value
-    result <- stats::as.dendrogram(
-        stats::hclust(stats::as.dist(1-M), method = "average")
-    )
+    result <- stats::hclust(stats::as.dist(1-M), method = "average")
     return(result)
 }
 
