@@ -23,7 +23,7 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
     breaks <- seq(0, 1, length=101)
     ordering <- stats::as.dendrogram(orderCellTypes(aurocs))
     
-    arg_list = list(
+    arg_list <- list(
         x = aurocs, margins = margins,
         key = TRUE, keysize = 1, key.xlab="AUROC", key.title="NULL",
         offsetRow=0.1, offsetCol=0.1,
@@ -32,8 +32,8 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
         col = auroc_cols, breaks = breaks, na.color = grDevices::gray(0.95),
         cexRow = cex, cexCol = cex
     )
-    additional_args = list(...)
-    arg_list[names(additional_args)] = additional_args
+    additional_args <- list(...)
+    arg_list[names(additional_args)] <- additional_args
     do.call(gplots::heatmap.2, arg_list)
 }
 
