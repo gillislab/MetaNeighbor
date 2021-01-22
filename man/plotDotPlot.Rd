@@ -40,6 +40,9 @@ alpha_row gives more weight to extreme AUROC values (close to 1).}
 \item{average_expressing_only}{Whether average expression should be computed
 based only on expressing cells (Seurat default) or taking into account zeros.}
 }
+\value{
+a ggplot object.
+}
 \description{
 The size of each dot reflects the number of cell that express a gene,
 the color reflects the average expression.

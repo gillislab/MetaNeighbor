@@ -29,3 +29,6 @@ celltype_NV = MetaNeighborUS(var_genes = var_genes,
 plotHeatmap(celltype_NV)
 
 }
+\seealso{
+\code{\link{ggPlotHeatmap}}
+}

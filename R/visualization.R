@@ -15,12 +15,13 @@
 #'                              cell_type = mn_data$cell_type)
 #' plotHeatmap(celltype_NV)
 #'
+#' @seealso \code{\link{ggPlotHeatmap}}
 #' @export
 #'
 plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
     auroc_cols <- rev(grDevices::colorRampPalette(RColorBrewer::brewer.pal(11,"RdYlBu"))(100))
     breaks <- seq(0, 1, length=101)
-    ordering <- stats::as.dendrogram(order_sym_matrix(aurocs))
+    ordering <- stats::as.dendrogram(orderCellTypes(aurocs))
     
     arg_list = list(
         x = aurocs, margins = margins,
@@ -36,7 +37,45 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
     do.call(gplots::heatmap.2, arg_list)
 }
 
-order_sym_matrix <- function(M, na_value = 0) {
+#' Plots symmetric AUROC heatmap, clustering cell types by similarity.
+#'
+#' This function is a ggplot alternative to plotHeatmap (without the cell type
+#' dendrogram).
+#'
+#' @param aurocs A square AUROC matrix as returned by MetaNeighborUS.
+#' @return A ggplot object.
+#'
+#' @seealso \code{\link{plotHeatmap}}
+#' @export
+#'
+ggPlotHeatmap <- function(aurocs) {
+    ct_order <- labels(stats::as.dendrogram(orderCellTypes(aurocs)))
+    `%>%` <- dplyr::`%>%`
+    tidy_aurocs <- tibble::as_tibble(aurocs, rownames = "target_ct") %>%
+        tidyr::pivot_longer(-target_ct,
+                            names_to = "ref_ct",
+                            values_to = "auroc") %>%
+        dplyr::mutate(ref_ct = factor(ref_ct, ct_order)) %>%
+        dplyr::mutate(target_ct = factor(target_ct, ct_order))
+    result <- tidy_aurocs %>%
+        ggplot2::ggplot(ggplot2::aes(x = ref_ct, y = target_ct, fill = auroc)) +
+        ggplot2::geom_tile() +
+        ggplot2::coord_fixed() +
+        ggplot2::scale_fill_distiller(palette = "RdYlBu", limits=c(0,1), na.value = grDevices::gray(0.95)) +
+        ggplot2::labs(x = NULL, y = NULL, fill = "AUROC") +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust=1, vjust=0.5))
+    return(result)
+}
+
+#' Order cell types based on AUROC similarity matrix.
+#'
+#' @param M A square AUROC matrix as returned by MetaNeighborUS.
+#' @param na_value Replace NA values with this value (default is 0).
+#' @return A hierarchical clustering object as returned by stats::hclust.
+#'
+#' @export
+#'
+orderCellTypes <- function(M, na_value = 0) {
     M <- (M + t(M))/2
     M[is.na(M)] <- na_value
     result <- stats::hclust(stats::as.dist(1-M), method = "average")
@@ -202,6 +241,7 @@ plotUpset = function(metaclusters, min_recurrence = 2,
 #' alpha_row gives more weight to extreme AUROC values (close to 1).
 #' @param average_expressing_only Whether average expression should be computed
 #' based only on expressing cells (Seurat default) or taking into account zeros.
+#' @return a ggplot object.
 #'
 #' @export
 plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
