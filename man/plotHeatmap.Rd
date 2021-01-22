@@ -4,7 +4,7 @@
 \alias{plotHeatmap}
 \title{Plots symmetric AUROC heatmap, clustering cell types by similarity.}
 \usage{
-plotHeatmap(aurocs, cex = 1, margins = c(8, 8))
+plotHeatmap(aurocs, cex = 1, margins = c(8, 8), ...)
 }
 \arguments{
 \item{aurocs}{A square AUROC matrix as returned by MetaNeighborUS.}
@@ -12,6 +12,9 @@ plotHeatmap(aurocs, cex = 1, margins = c(8, 8))
 \item{cex}{Size factor for row and column labels.}
 
 \item{margins}{Size of margins (for row and column labels).}
+
+\item{...}{Additional graphical parameters that are passed on to
+gplots::heatmap.2 (allows customization of the heatmap).}
 }
 \description{
 Plots symmetric AUROC heatmap, clustering cell types by similarity.

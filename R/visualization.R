@@ -3,6 +3,8 @@
 #' @param aurocs A square AUROC matrix as returned by MetaNeighborUS.
 #' @param cex Size factor for row and column labels.
 #' @param margins Size of margins (for row and column labels).
+#' @param ... Additional graphical parameters that are passed on to
+#'  gplots::heatmap.2 (allows customization of the heatmap).
 #'
 #' @examples
 #' data(mn_data)
