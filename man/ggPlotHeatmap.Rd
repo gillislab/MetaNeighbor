@@ -4,10 +4,13 @@
 \alias{ggPlotHeatmap}
 \title{Plots symmetric AUROC heatmap, clustering cell types by similarity.}
 \usage{
-ggPlotHeatmap(aurocs)
+ggPlotHeatmap(aurocs, label_size = 10)
 }
 \arguments{
 \item{aurocs}{A square AUROC matrix as returned by MetaNeighborUS.}
+
+\item{label_size}{Font size of cell type labels along the heatmap
+(default is 10).}
 }
 \value{
 A ggplot object.

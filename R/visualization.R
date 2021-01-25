@@ -43,12 +43,14 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
 #' dendrogram).
 #'
 #' @param aurocs A square AUROC matrix as returned by MetaNeighborUS.
+#' @param label_size Font size of cell type labels along the heatmap
+#'  (default is 10).
 #' @return A ggplot object.
 #'
 #' @seealso \code{\link{plotHeatmap}}
 #' @export
 #'
-ggPlotHeatmap <- function(aurocs) {
+ggPlotHeatmap <- function(aurocs, label_size = 10) {
     ct_order <- labels(stats::as.dendrogram(orderCellTypes(aurocs)))
     `%>%` <- dplyr::`%>%`
     tidy_aurocs <- tibble::as_tibble(aurocs, rownames = "target_ct") %>%
@@ -63,7 +65,8 @@ ggPlotHeatmap <- function(aurocs) {
         ggplot2::coord_fixed() +
         ggplot2::scale_fill_distiller(palette = "RdYlBu", limits=c(0,1), na.value = grDevices::gray(0.95)) +
         ggplot2::labs(x = NULL, y = NULL, fill = "AUROC") +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust=1, vjust=0.5))
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust=1, vjust=0.5, size=label_size),
+                       axis.text.y = ggplot2::element_text(size=label_size))
     return(result)
 }
 
