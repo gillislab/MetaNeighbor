@@ -66,8 +66,13 @@ plotClusterGraph <- function(graph, study_id=NULL, cell_type=NULL,
          edge.arrow.size=.1*size_factor,
          edge.arrow.width=0.5*size_factor)
     graphics::legend(
-        "topright", legend = names(vertex_colors), pt.bg = vertex_colors,
-        pt.cex = legend_cex, cex = 0.5*legend_cex, bty="n", pch=21
+        "topleft", legend = names(vertex_colors), pt.bg = vertex_colors,
+        pt.cex = legend_cex, cex = 0.5*legend_cex, pch=21
+    )
+    graphics::legend(
+        "topright", legend = c("Best hit", "2nd best hit"),
+        col = c("darkgray", "orange"),
+        cex = 0.5*legend_cex, lty=1, lwd = 2*legend_cex
     )
 }
 
