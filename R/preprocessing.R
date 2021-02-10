@@ -14,7 +14,12 @@
 #' mapping each cell to its original dataset (names in "sce_list").
 #'
 #' @export
-mergeSCE <- function(sce_list) {    
+mergeSCE <- function(sce_list) {
+    # test if the list has names for the datasets
+    if (is.null(names(sce_list))) {
+        stop("The list of SCE datasets must be named (e.g. list(dataset_1=..., dataset2=...)).")
+    }
+    
     # gather expression data
     common_assays <- Reduce(
         intersect,
