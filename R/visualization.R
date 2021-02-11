@@ -164,6 +164,15 @@ order_rows_according_to_cols = function(M, alpha = 1) {
 #' @export
 #'
 plotBPlot <- function(nv_mat, hvg_score=NULL, cex=1) {
+  # remove cell types with 0 variance
+  has_zero_var <- matrixStats::colVars(nv_mat, na.rm = TRUE) < 1e-10
+  if (sum(has_zero_var) > 0) {
+    warning("Removing cell types with identical scores across all gene sets ",
+            "(cell types not present in data?): ",
+            paste(colnames(nv_mat)[has_zero_var], collapse = ", "), ".")
+    nv_mat <- nv_mat[, !has_zero_var]
+  }
+
   Celltype <- rep(colnames(nv_mat),each=dim(nv_mat)[1])
   ROCValues <- unlist(lapply(seq_len(dim(nv_mat)[2]), function(i) {nv_mat[,i]}))
   beanplot::beanplot(

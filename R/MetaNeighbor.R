@@ -124,15 +124,8 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels,
         nv_mat[i,] <- round(rowMeans(ROCs[[i]], na.rm = TRUE),3)
     }
 
-    if(bplot){
-        Celltype <- rep(colnames(nv_mat),each=dim(nv_mat)[1])
-        ROCValues <- unlist(lapply(seq_len(dim(nv_mat)[2]), function(i) nv_mat[,i]))
-        beanplot::beanplot(ROCValues ~ Celltype,
-                           border="NA",
-                           col="gray",
-                           ylab="AUROC",
-                           what=c(0,1,1,1),
-                           frame.plot = FALSE)
+    if(bplot) {
+      plotBPlot(nv_mat)
     }
 
     if (detailed_results) {
