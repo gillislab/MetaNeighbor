@@ -12,7 +12,7 @@ plotDotPlot(
   i = 1,
   normalize_library_size = TRUE,
   alpha_row = 10,
-  average_expressing_only = TRUE
+  average_expressing_only = FALSE
 )
 }
 \arguments{

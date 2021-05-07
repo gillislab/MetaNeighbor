@@ -258,7 +258,7 @@ plotUpset = function(metaclusters, min_recurrence = 2,
 #' @export
 plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
                        normalize_library_size = TRUE, alpha_row = 10,
-                       average_expressing_only = TRUE) {
+                       average_expressing_only = FALSE) {
     if (length(experiment_labels)!=ncol(dat)) {
         stop('experiment_labels length does not match number of samples.')
     }
@@ -307,8 +307,8 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
         dplyr::mutate(study = getStudyId(cluster),
                       cell_type = getCellType(cluster)) %>%
         dplyr::group_by(gene, cell_type) %>%
-        dplyr::summarize(average_expression = mean(average_expression),
-                         percent_expressing = mean(percent_expressing))
+        dplyr::summarize(average_expression = mean(average_expression, na.rm=TRUE),
+                         percent_expressing = mean(percent_expressing, na.rm=TRUE))
     summary_matrix <- summary %>%
         dplyr::select(gene, cell_type, average_expression) %>%
         tidyr::pivot_wider(id_cols = dplyr::everything(),
@@ -331,5 +331,6 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
         ggplot2::theme(axis.title.x = ggplot2::element_blank(),
                        axis.title.y = ggplot2::element_blank()) +
         ggplot2::scale_color_distiller(palette = "RdYlBu") +
-        ggplot2::labs(col = "Average expression", size = "Percent expressing")
+        ggplot2::labs(col = "Average expression", size = "Percent expressing") +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle=45, hjust=1))
 }
