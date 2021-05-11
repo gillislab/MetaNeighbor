@@ -61,14 +61,18 @@ topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
     
     type_by_study <- table(pheno[,"StudyID_CT"])
     m <- match(rownames(cell_NV), rownames(type_by_study))
+    if (all(is.na(m))) {
+        stop('study_id and cell_type do not match MetaNeighbor results')
+    }
     f_a <- !is.na(m)
     f_b <- m[f_a]
     cell_NV <- cell_NV[f_a,f_a]
     type_by_study <- type_by_study[f_b]
 
     # remove within-dataset scores
+    study_ids <- getStudyId(row.names(type_by_study != 0))
     for(i in unique(pheno$study_id)){
-        filt <- grepl(i, row.names(type_by_study != 0))
+        filt <- i == study_ids
         cell_NV[filt,filt] <- 0
     }
 
