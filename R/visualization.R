@@ -326,7 +326,7 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
                                      size = percent_expressing,
                                      col = average_expression)) +
         ggplot2::geom_point() + 
-        ggplot2::scale_radius(limits = c(0,1)) +
+        ggplot2::scale_radius(limits = c(0,1.001)) +
         ggplot2::theme_bw() +
         ggplot2::theme(axis.title.x = ggplot2::element_blank(),
                        axis.title.y = ggplot2::element_blank()) +
