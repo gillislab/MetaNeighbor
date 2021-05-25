@@ -275,11 +275,11 @@ plotDotPlot = function(dat, experiment_labels, celltype_labels, gene_set, i = 1,
     expr <- SummarizedExperiment::assay(dat, i = i)
     if (normalize_library_size) {
         normalization_factor <- Matrix::colSums(expr) / 1000000
+        expr <- scale(expr[gene_set,,drop=FALSE], center = FALSE,
+                      scale = normalization_factor)
     } else {
-        normalization_factor <- 1
+        expr <- expr[gene_set,,drop=FALSE]
     }
-    expr <- scale(expr[gene_set,,drop=FALSE], center = FALSE,
-                  scale = normalization_factor)
     
     label_matrix <- design_matrix(makeClusterName(experiment_labels, celltype_labels))
     label_matrix <- scale(label_matrix, center = FALSE, scale = colSums(label_matrix))
