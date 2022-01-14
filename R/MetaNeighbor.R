@@ -121,7 +121,12 @@ MetaNeighbor <-function(dat, i = 1, experiment_labels, celltype_labels,
     }
     
     for(i in seq_along(ROCs)){
-        nv_mat[i,] <- round(rowMeans(ROCs[[i]], na.rm = TRUE),3)
+        roc_mat <- ROCs[[i]]
+        if(length(dim(roc_mat))<2){
+          nv_mat[i,]<-rep(NA, dim(nv_mat)[2])
+        } else {
+          nv_mat[i,] <- round(rowMeans(roc_mat, na.rm = TRUE),3)
+        }
     }
 
     if(bplot) {
