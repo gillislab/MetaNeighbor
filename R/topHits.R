@@ -85,8 +85,8 @@ topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplica
         tidyr::pivot_longer(cols = -ref_cell_type,
                             names_to = "target_cell_type",
                             values_to = "auroc") %>%
-        dplyr::mutate(ref_study = sub("[|].*$", "", ref_cell_type),
-                      target_study = sub("[|].*$", "", target_cell_type)) %>%
+        dplyr::mutate(ref_study = getStudyId(ref_cell_type),
+                      target_study = getStudyId(target_cell_type)) %>%
         dplyr::filter(ref_study != target_study) %>%
         dplyr::group_by(ref_cell_type, target_study) %>%
         dplyr::filter(auroc == max(auroc, na.rm = TRUE)) %>%
