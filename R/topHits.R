@@ -35,8 +35,8 @@
 #' @export
 #'
 
-topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
-  by_study_results <- topHitsByStudy(cell_NV, threshold=threshold, n_digits = 2, collapse_duplicates = TRUE)
+topHits <- function(cell_NV, dat = NULL, i = 1, study_id = NULL, cell_type = NULL, threshold = 0.95, n_digits = 2, collapse_duplicates = TRUE){
+  by_study_results <- topHitsByStudy(cell_NV, threshold=threshold, n_digits = n_digits, collapse_duplicates = collapse_duplicates)
   by_study_results <- dplyr::rename(by_study_results, Mean_AUROC = AUROC)
   return (by_study_results)
 }
