@@ -25,7 +25,7 @@ plotHeatmap <- function(aurocs, cex = 1, margins = c(8, 8), ...) {
     
     arg_list <- list(
         x = aurocs, margins = margins,
-        key = TRUE, keysize = 1, key.xlab="AUROC", key.title="NULL",
+        key = TRUE, keysize = 1, key.xlab="AUROC", key.title="",
         offsetRow=0.1, offsetCol=0.1,
         trace = "none", density.info = "none",
         Rowv = ordering, Colv = ordering, 
@@ -126,7 +126,7 @@ plotHeatmapPretrained <- function(aurocs, alpha_col = 1, alpha_row = 10,
 
     gplots::heatmap.2(
         x = aurocs, margins = margins,
-        key = TRUE, keysize = 1, key.xlab="AUROC", key.title="NULL",
+        key = TRUE, keysize = 1, key.xlab="AUROC", key.title="",
         offsetRow=0.1, offsetCol=0.1,
         trace = "none", density.info = "none", dendrogram = "col",
         col = auroc_cols, breaks = breaks, na.color = grDevices::gray(0.95),

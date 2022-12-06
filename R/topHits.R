@@ -1,9 +1,7 @@
 #' Find reciprocal top hits
 #'
 #' Identifies reciprocal top hits and high scoring cell type pairs. This
-#' function only look for the overall top hit for each cell type. We strongly
-#' recommend using topHitsByStudy instead, which looks for top hits in each
-#' target study, providing a more comprehensive view of replicability.
+#' function calls the newer topHitsByStudy function. 
 #'
 #' @param cell_NV matrix of celltype-to-celltype AUROC scores
 #' (output from \code{\link{MetaNeighborUS}})
@@ -37,82 +35,10 @@
 #' @export
 #'
 
-topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
-    warning("The topHits function only looks for the best overall hit for each",
-            " reference cell type. We strongly recommend looking for best hits",
-            " in each target dataset by using the topHitsByStudy function ",
-            "instead.")
-    samples <- colnames(dat)
-    study_id <- as.character(study_id)
-    cell_type <- as.character(cell_type)
-    
-    #check obj contains study_id
-    if(length(study_id)!=length(samples)){
-        stop('study_id length does not match number of samples')
-    }
-    
-    #check obj contains cell_type
-    if(length(cell_type)!=length(samples)){
-        stop('cell_type length does not match number of samples')
-    } 
-    
-    pheno <- as.data.frame(cbind(study_id,cell_type), stringsAsFactors = FALSE)
-    pheno$StudyID_CT <- makeClusterName(pheno$study_id, pheno$cell_type)
-    
-    type_by_study <- table(pheno[,"StudyID_CT"])
-    m <- match(rownames(cell_NV), rownames(type_by_study))
-    if (all(is.na(m))) {
-        stop('study_id and cell_type do not match MetaNeighbor results')
-    }
-    f_a <- !is.na(m)
-    f_b <- m[f_a]
-    cell_NV <- cell_NV[f_a,f_a]
-    type_by_study <- type_by_study[f_b]
-
-    # remove within-dataset scores
-    study_ids <- getStudyId(row.names(type_by_study != 0))
-    for(i in unique(pheno$study_id)){
-        filt <- i == study_ids
-        cell_NV[filt,filt] <- 0
-    }
-
-    # remove self-scores
-    diag(cell_NV) <-0
-    temp <- vector(length = length(rownames(cell_NV)))
-    geneInd <- vector(length = length(rownames(cell_NV)))
-    
-    # identify top hits
-    for(i in seq_len(dim(cell_NV)[1])){
-        val <- which.max(cell_NV[i,])
-        temp[i] <- val
-        geneInd[i] <- names(val)
-    }
-
-    temp <- cbind(rownames(cell_NV), temp)
-    for(i in seq_len(dim(cell_NV)[1])){
-        temp[i,2]=cell_NV[i,as.numeric(temp[i,2])]
-    }
-    
-    rownames(temp) <- geneInd
-    
-    recip <- temp[duplicated(temp[,2]),]
-    filt  <- as.numeric(temp[,2]) >= threshold
-    recip <- rbind(recip,temp[filt,])
-    recip <- cbind(recip, c(rep("Reciprocal_top_hit",
-                                each=dim(recip)[1]-sum(filt)),
-                            rep(paste("Above",threshold,sep="_"),
-                                each=sum(filt))))
-    recip <- recip[!duplicated(recip[,2]),]
-
-    #tidy results
-    recip2  <- cbind(rownames(recip),recip[,1:3])
-    colnames(recip2) <- c("Study_ID|Celltype_1","Study_ID|Celltype_2","Mean_AUROC","Match_type")
-    rownames(recip2) <- NULL
-
-    recip     <- recip2[order(recip2[,3],decreasing=TRUE),]
-    recip2    <- as.data.frame(recip)
-    recip2[,3]<- round(as.numeric(as.character(recip2[,3])),2)
-    return(recip2)
+topHits <- function(cell_NV, dat = NULL, i = 1, study_id = NULL, cell_type = NULL, threshold = 0.95, n_digits = 2, collapse_duplicates = TRUE){
+  by_study_results <- topHitsByStudy(cell_NV, threshold=threshold, n_digits = n_digits, collapse_duplicates = collapse_duplicates)
+  by_study_results <- dplyr::rename(by_study_results, Mean_AUROC = AUROC)
+  return (by_study_results)
 }
 
 #' Find reciprocal top hits, stratifying results by study.
@@ -154,6 +80,7 @@ topHits <- function(cell_NV, dat, i = 1, study_id, cell_type, threshold=0.95){
 #'
 topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplicates = TRUE) {
     `%>%` <- dplyr::`%>%`
+    #could be sped up by finding same study AUROC's when in matrix form and masking them to NA (as in the old topHits function)
     result <- tibble::as_tibble(auroc, rownames = "ref_cell_type") %>%
         tidyr::pivot_longer(cols = -ref_cell_type,
                             names_to = "target_cell_type",
@@ -166,7 +93,7 @@ topHitsByStudy = function(auroc, threshold = 0.9, n_digits = 2, collapse_duplica
         dplyr::ungroup() %>%
         dplyr::select(-ref_study, -target_study) %>%
         dplyr::mutate(is_reciprocal = is_reciprocal_top_hit(.)) %>%
-        dplyr::filter(auroc >= threshold)
+        dplyr::filter(auroc >= threshold) 
     
     if (collapse_duplicates) {
         result <- result %>%
